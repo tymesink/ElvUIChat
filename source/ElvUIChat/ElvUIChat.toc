@@ -1,0 +1,12 @@
+## Title: |cff1784d1ElvUIChat|r
+## Notes: User Interface Replacement
+## Author: Elv, Simpy
+## Version: 13.23
+## SavedVariables: ElvUIChatDB, ElvUIChatPrivateDB
+## SavedVariablesPerCharacter: ElvUIChatCharacterDB
+## OptionalDeps: SharedMedia
+## Interface: 100005
+
+Libs\Load.xml
+Core\Load.xml
+Skins\Load.xml
