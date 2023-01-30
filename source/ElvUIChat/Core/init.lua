@@ -83,7 +83,8 @@ do
 	E:AddLib('LSM', 'LibSharedMedia-3.0')
 	E:AddLib('ACL', 'AceLocale-3.0-ElvUIChat')
 	E:AddLib('SimpleSticky', 'LibSimpleSticky-1.0')
-
+	E:AddLib('Deflate', 'LibDeflate')
+	
 	-- libraries used for options
 	E:AddLib('AceGUI', 'AceGUI-3.0')
 	E:AddLib('AceConfig', 'AceConfig-3.0-ElvUIChat')

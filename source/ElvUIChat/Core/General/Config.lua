@@ -82,7 +82,7 @@ function E:ToggleMoveMode(which)
 
 	if mode then
 		E:Grid_Show()
-		_G.ElvUIGrid:SetAlpha(0.4)
+		_G.ElvUIChatGrid:SetAlpha(0.4)
 
 		if not ElvUIMoverPopupWindow then
 			E:CreateMoverPopup()
@@ -96,7 +96,7 @@ function E:ToggleMoveMode(which)
 		--end
 	else
 		E:Grid_Hide()
-		_G.ElvUIGrid:SetAlpha(1)
+		_G.ElvUIChatGrid:SetAlpha(1)
 
 		if ElvUIMoverPopupWindow then
 			ElvUIMoverPopupWindow:Hide()
@@ -119,7 +119,7 @@ end
 
 function E:Grid_Create()
 	if not grid then
-		grid = CreateFrame('Frame', 'ElvUIGrid', E.UIParent)
+		grid = CreateFrame('Frame', 'ElvUIChatGrid', E.UIParent)
 		grid:SetFrameStrata('BACKGROUND')
 	else
 		grid.regionCount = 0

@@ -24,5 +24,6 @@
 	<Script file='LibAceConfigHelper\LibAceConfigHelper.lua'/>
 	<Script file='LibDualSpec-1.0\LibDualSpec-1.0.lua'/>
 	<Script file='LibSimpleSticky\LibSimpleSticky.lua'/>
+	<Script file='LibDeflate\LibDeflate.lua'/>
 	<Script file='LibAnim\LibAnim.lua'/>
 </Ui>
