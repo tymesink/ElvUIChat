@@ -67,7 +67,6 @@ E.UserList = {}
 --Tables
 E.media = {}
 E.frames = {}
-E.unitFrameElements = {}
 E.statusBars = {}
 E.texts = {}
 E.snapBars = {}
@@ -259,7 +258,6 @@ function E:UpdateMedia(mediaType)
 
 	-- Colors
 	E.media.bordercolor = E:SetColorTable(E.media.bordercolor, E:UpdateClassColor(E.db.general.bordercolor))
-	E.media.unitframeBorderColor = E:SetColorTable(E.media.unitframeBorderColor, E:UpdateClassColor(E.db.unitframe.colors.borderColor))
 	E.media.backdropcolor = E:SetColorTable(E.media.backdropcolor, E:UpdateClassColor(E.db.general.backdropcolor))
 	E.media.backdropfadecolor = E:SetColorTable(E.media.backdropfadecolor, E:UpdateClassColor(E.db.general.backdropfadecolor))
 
@@ -318,16 +316,6 @@ function E:UpdateFrameTemplates()
 			E.frames[frame] = nil
 		end
 	end
-
-	for frame in pairs(E.unitFrameElements) do
-		if frame and frame.template and not frame:IsForbidden() then
-			if not (frame.ignoreUpdates or frame.ignoreFrameTemplates) then
-				frame:SetTemplate(frame.template, frame.glossTex, nil, frame.forcePixelMode, frame.isUnitFrameElement)
-			end
-		else
-			E.unitFrameElements[frame] = nil
-		end
-	end
 end
 
 function E:UpdateBorderColors()
@@ -339,17 +327,6 @@ function E:UpdateBorderColors()
 			end
 		else
 			E.frames[frame] = nil
-		end
-	end
-
-	local r2, g2, b2 = unpack(E.media.unitframeBorderColor)
-	for frame in pairs(E.unitFrameElements) do
-		if frame and frame.template and not frame:IsForbidden() then
-			if not (frame.ignoreUpdates or frame.forcedBorderColors) and (frame.template == 'Default' or frame.template == 'Transparent') then
-				frame:SetBackdropBorderColor(r2, g2, b2)
-			end
-		else
-			E.unitFrameElements[frame] = nil
 		end
 	end
 end
@@ -371,22 +348,6 @@ function E:UpdateBackdropColors()
 			end
 		else
 			E.frames[frame] = nil
-		end
-	end
-
-	for frame in pairs(E.unitFrameElements) do
-		if frame and frame.template and not frame:IsForbidden() then
-			if not frame.ignoreUpdates then
-				if frame.callbackBackdropColor then
-					frame:callbackBackdropColor()
-				elseif frame.template == 'Default' then
-					frame:SetBackdropColor(r, g, b)
-				elseif frame.template == 'Transparent' then
-					frame:SetBackdropColor(r2, g2, b2, frame.customBackdropAlpha or a2)
-				end
-			end
-		else
-			E.unitFrameElements[frame] = nil
 		end
 	end
 end

@@ -42,26 +42,6 @@ V.general = {
 	worldMap = false,
 }
 
-V.bags = {
-	enable = false,
-	bagBar = false,
-}
-
-V.nameplates = {
-	enable = false,
-}
-
-V.auras = {
-	enable = false,
-	disableBlizzard = false,
-	buffsHeader = false,
-	debuffsHeader = false,
-	masque = {
-		buffs = false,
-		debuffs = false,
-	}
-}
-
 V.chat = {
 	enable = true,
 }
@@ -176,33 +156,5 @@ V.skins = {
 		majorFactions = true,
 		genericTrait = true,
 		editor = true,
-	}
-}
-
-V.tooltip = {
-	enable = false,
-}
-
-V.unitframe = {
-	enable = false,
-	disabledBlizzardFrames = {
-		castbar = false,
-		player = false,
-		target = false,
-		focus = false,
-		boss = false,
-		arena = false,
-		party = false,
-		raid = false,
-	}
-}
-
-V.actionbar = {
-	enable = false,
-	hideCooldownBling = false,
-	masque = {
-		actionbars = false,
-		petBar = false,
-		stanceBar = false,
 	}
 }
