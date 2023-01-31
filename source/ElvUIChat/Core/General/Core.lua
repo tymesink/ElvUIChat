@@ -117,13 +117,6 @@ E.HiddenFrame:SetPoint('BOTTOM')
 E.HiddenFrame:SetSize(1,1)
 E.HiddenFrame:Hide()
 
-do -- used in options
-	E.DEFAULT_FILTER = {}
-	for filter, tbl in pairs(G.unitframe.aurafilters) do
-		E.DEFAULT_FILTER[filter] = tbl.type
-	end
-end
-
 do
 	local a1,a2 = '','[%s%-]'
 	function E:ShortenRealm(realm)
@@ -276,13 +269,6 @@ function E:UpdateMedia(mediaType)
 	local value = E:UpdateClassColor(E.db.general.valuecolor)
 	E.media.rgbvaluecolor = E:SetColorTable(E.media.rgbvaluecolor, value)
 	E.media.hexvaluecolor = E:RGBToHex(value.r, value.g, value.b)
-
-	if E.private.nameplates.enable then
-		-- Colors for Target Indicator
-		E:UpdateClassColor(E.db.nameplates.colors.glowColor)
-		E:UpdateClassColor(E.db.nameplates.colors.lowHealthColor)
-		E:UpdateClassColor(E.db.nameplates.colors.lowHealthHalf)
-	end
 
 	if E.private.chat.enable then
 		-- Chat Tab Selector Color
@@ -1265,7 +1251,6 @@ function E:Initialize()
 
 	-- default the non thing pixel border color to 191919, otherwise its 000000
 	if not E.PixelMode then P.general.bordercolor = { r = 0.1, g = 0.1, b = 0.1 } end
-	if not E.db.unitframe.thinBorders then P.unitframe.colors.borderColor = { r = 0.1, g = 0.1, b = 0.1 } end
 
 	E:DBConversions()
 	E:UIScale()
