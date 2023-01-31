@@ -4,42 +4,12 @@
 local E, L, V, P, G = unpack(ElvUIChat)
 
 V.general = {
-	loot = false,
-	lootRoll = false,
 	normTex = 'ElvUIChat Norm',
 	glossTex = 'ElvUIChat Norm',
-	dmgfont = 'Expressway',
-	namefont = 'Expressway', -- (PT Sans) some dont render for mail room quest
 	chatBubbles = 'backdrop',
-	chatBubbleFont = 'PT Sans Narrow',
-	chatBubbleFontSize = 12,
-	chatBubbleFontOutline = 'NONE',
-	chatBubbleName = false,
-	nameplateFont = 'PT Sans Narrow',
-	nameplateFontSize = 9,
-	nameplateFontOutline = 'OUTLINE',
-	nameplateLargeFont = 'PT Sans Narrow',
-	nameplateLargeFontSize = 11,
-	nameplateLargeFontOutline = 'OUTLINE',
 	pixelPerfect = false,
-	replaceNameFont = false,
-	replaceCombatFont = false,
-	replaceCombatText = false,
-	replaceBubbleFont = false,
-	replaceNameplateFont = false,
-	replaceBlizzFonts = false,
-	unifiedBlizzFonts = false,
-	totemTracker = false,
-	minimap = {
-		enable = false,
-		hideClassHallReport = false,
-		hideCalendar = false,
-		hideTracking = false,
-	},
 	classColorMentionsSpeech = false,
-	raidUtility = false,
 	voiceOverlay = false,
-	worldMap = false,
 }
 
 V.chat = {

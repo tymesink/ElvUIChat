@@ -889,11 +889,6 @@ do
 		local nextUpdate, nextDelay = staggerTable[1]
 		if nextUpdate then
 			tremove(staggerTable, 1)
-
-			if nextUpdate == 'UpdateNamePlates' or nextUpdate == 'UpdateBags' then
-				nextDelay = 0.05
-			end
-
 			E:Delay(nextDelay or staggerDelay, E[nextUpdate])
 		end
 	end
