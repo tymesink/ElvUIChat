@@ -21,7 +21,7 @@ local CallbackHandler = _G.LibStub('CallbackHandler-1.0')
 local AddOnName, Engine = ...
 local E = AceAddon:NewAddon(AddOnName, 'AceConsole-3.0', 'AceEvent-3.0', 'AceTimer-3.0', 'AceHook-3.0')
 E.DF = {profile = {}, global = {}}; E.privateVars = {profile = {}} -- Defaults
-E.Options = {type = 'group', args = {}, childGroups = 'ElvUI_HiddenTree'}
+E.Options = {type = 'group', args = {}, childGroups = 'ElvUIChat_HiddenTree'}
 E.callbacks = E.callbacks or CallbackHandler:New(E)
 E.wowpatch, E.wowbuild, E.wowdate, E.wowtoc = GetBuildInfo()
 E.locale = GetLocale()
@@ -139,8 +139,8 @@ function E:OnInitialize()
 		end
 	end
 
-	E.ScanTooltip = CreateFrame('GameTooltip', 'ElvUI_ScanTooltip', _G.UIParent, 'GameTooltipTemplate')
-	E.EasyMenu = CreateFrame('Frame', 'ElvUI_EasyMenu', _G.UIParent, 'UIDropDownMenuTemplate')
+	E.ScanTooltip = CreateFrame('GameTooltip', 'ElvUIChat_ScanTooltip', _G.UIParent, 'GameTooltipTemplate')
+	E.EasyMenu = CreateFrame('Frame', 'ElvUIChat_EasyMenu', _G.UIParent, 'UIDropDownMenuTemplate')
 
 	E.PixelMode = E.twoPixelsPlease or E.private.general.pixelPerfect -- keep this over `UIScale`
 	E.Border = (E.PixelMode and not E.twoPixelsPlease) and 1 or 2

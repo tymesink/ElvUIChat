@@ -324,7 +324,7 @@ function E:WaitFunc(elapse)
 end
 
 E.WaitTable = {}
-E.WaitFrame = CreateFrame('Frame', 'ElvUI_WaitFrame', _G.UIParent)
+E.WaitFrame = CreateFrame('Frame', 'ElvUIChat_WaitFrame', _G.UIParent)
 E.WaitFrame:SetScript('OnUpdate', E.WaitFunc)
 
 --Add time before calling a function

@@ -91,7 +91,7 @@ function E:ToggleMoveMode(which)
 		ElvUIMoverPopupWindow:Show()
 		_G.UIDropDownMenu_SetSelectedValue(ElvUIMoverPopupWindowDropDown, strupper(which))
 
-		--if IsAddOnLoaded('ElvUI_Options') then
+		--if IsAddOnLoaded('ElvUIChat_Options') then
 			E:Config_CloseWindow()
 		--end
 	else
@@ -302,7 +302,7 @@ function E:CreateMoverPopup()
 		if E.ConfigurationToggled then
 			E.ConfigurationToggled = nil
 
-			--if IsAddOnLoaded('ElvUI_Options') then
+			--if IsAddOnLoaded('ElvUIChat_Options') then
 				E:Config_OpenWindow()
 			--end
 		end
@@ -1048,16 +1048,16 @@ function E:ToggleOptions(msg)
 		return
 	end
 
-	-- if not IsAddOnLoaded('ElvUI_Options') then
+	-- if not IsAddOnLoaded('ElvUIChat_Options') then
 	-- 	local noConfig
-	-- 	local _, _, _, _, reason = GetAddOnInfo('ElvUI_Options')
+	-- 	local _, _, _, _, reason = GetAddOnInfo('ElvUIChat_Options')
 
 	-- 	if reason ~= 'MISSING' then
-	-- 		EnableAddOn('ElvUI_Options')
-	-- 		LoadAddOn('ElvUI_Options')
+	-- 		EnableAddOn('ElvUIChat_Options')
+	-- 		LoadAddOn('ElvUIChat_Options')
 
 	-- 		-- version check elvui options if it's actually enabled
-	-- 		if GetAddOnMetadata('ElvUI_Options', 'Version') ~= '1.09' then
+	-- 		if GetAddOnMetadata('ElvUIChat_Options', 'Version') ~= '1.09' then
 	-- 			self:StaticPopup_Show('CLIENT_UPDATE_REQUEST')
 	-- 		end
 	-- 	else
@@ -1065,7 +1065,7 @@ function E:ToggleOptions(msg)
 	-- 	end
 
 	-- 	if noConfig then
-	-- 		self:Print('|cffff0000Error -- Addon "ElvUI_Options" not found.|r')
+	-- 		self:Print('|cffff0000Error -- Addon "ElvUIChat_Options" not found.|r')
 	-- 		return
 	-- 	end
 	-- end

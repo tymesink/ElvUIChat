@@ -865,7 +865,7 @@ function CH:StyleChat(frame)
 	CH:SecureHook(editbox, 'AddHistoryLine', 'ChatEdit_AddHistory')
 
 	--copy chat button
-	local copyButton = CreateFrame('Frame', format('ElvUI_CopyChatButton%d', id), frame)
+	local copyButton = CreateFrame('Frame', format('ElvUIChat_CopyChatButton%d', id), frame)
 	copyButton:EnableMouse(true)
 	copyButton:SetAlpha(0.35)
 	copyButton:Size(20, 22)
@@ -902,7 +902,7 @@ end
 function CH:AddMessage(msg, infoR, infoG, infoB, infoID, accessID, typeID, isHistory, historyTime)
 	if not strmatch(msg, '^|Helvtime|h') and not strmatch(msg, '^|Hcpl:') then
 		local historyTimestamp --we need to extend the arguments on AddMessage so we can properly handle times without overriding
-		if isHistory == 'ElvUI_ChatHistory' then historyTimestamp = historyTime end
+		if isHistory == 'ElvUIChat_ChatHistory' then historyTimestamp = historyTime end
 
 		if CH.db.timeStampFormat and CH.db.timeStampFormat ~= 'NONE' then
 			local timeStamp = BetterDate(CH.db.timeStampFormat, historyTimestamp or CH:GetChatTime())
@@ -1757,7 +1757,7 @@ function CH:ChatFrame_MessageEventHandler(frame, event, arg1, arg2, arg3, arg4, 
 	-- we also send isHistory and historyTime into CH:AddMessage so that we don't have to override the timestamp.
 
 	local notChatHistory, historySavedName --we need to extend the arguments on CH.ChatFrame_MessageEventHandler so we can properly handle saved names without overriding
-	if isHistory == 'ElvUI_ChatHistory' then
+	if isHistory == 'ElvUIChat_ChatHistory' then
 		if historyBTag then arg2 = historyBTag end -- swap arg2 (which is a |k string) to btag name
 		historySavedName = historyName
 	else
@@ -2609,7 +2609,7 @@ function CH:DisplayChatHistory()
 					end
 					if not skip and gsub(strsub(d[50],10),'_INFORM','') == messageType then
 						if d[1] and not CH:MessageIsProtected(d[1]) then
-							CH:ChatFrame_MessageEventHandler(_G[chat],d[50],d[1],d[2],d[3],d[4],d[5],d[6],d[7],d[8],d[9],d[10],d[11],d[12],d[13],d[14],d[15],d[16],d[17],'ElvUI_ChatHistory',d[51],d[52],d[53])
+							CH:ChatFrame_MessageEventHandler(_G[chat],d[50],d[1],d[2],d[3],d[4],d[5],d[6],d[7],d[8],d[9],d[10],d[11],d[12],d[13],d[14],d[15],d[16],d[17],'ElvUIChat_ChatHistory',d[51],d[52],d[53])
 						end
 					end
 				end

@@ -97,7 +97,7 @@ do
 
 		local step = 1
 		for i = 1, 10 do
-			local tex = _G['ElvUI_ScanTooltipTexture'..i]
+			local tex = _G['ElvUIChat_ScanTooltipTexture'..i]
 			local texture = tex and tex:IsShown() and tex:GetTexture()
 			if texture then
 				if texture == essenceTextureID then
@@ -344,7 +344,7 @@ end
 function E:PLAYER_REGEN_DISABLED()
 	local err
 
-	--if IsAddOnLoaded('ElvUI_Options') then
+	--if IsAddOnLoaded('ElvUIChat_Options') then
 		local ACD = E.Libs.AceConfigDialog
 		if ACD and ACD.OpenFrames and ACD.OpenFrames.ElvUIChat then
 			ACD:Close('ElvUIChat')

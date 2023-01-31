@@ -737,11 +737,11 @@ do
 	local SendMessageWaiting -- only allow 1 delay at a time regardless of eventing
 	function E:SendMessage()
 		if IsInRaid() then
-			C_ChatInfo_SendAddonMessage('ELVUI_VERSIONCHK', E.version, (not IsInRaid(LE_PARTY_CATEGORY_HOME) and IsInRaid(LE_PARTY_CATEGORY_INSTANCE)) and 'INSTANCE_CHAT' or 'RAID')
+			C_ChatInfo_SendAddonMessage('ElvUIChat_VERSIONCHK', E.version, (not IsInRaid(LE_PARTY_CATEGORY_HOME) and IsInRaid(LE_PARTY_CATEGORY_INSTANCE)) and 'INSTANCE_CHAT' or 'RAID')
 		elseif IsInGroup() then
-			C_ChatInfo_SendAddonMessage('ELVUI_VERSIONCHK', E.version, (not IsInGroup(LE_PARTY_CATEGORY_HOME) and IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) and 'INSTANCE_CHAT' or 'PARTY')
+			C_ChatInfo_SendAddonMessage('ElvUIChat_VERSIONCHK', E.version, (not IsInGroup(LE_PARTY_CATEGORY_HOME) and IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) and 'INSTANCE_CHAT' or 'PARTY')
 		elseif IsInGuild() then
-			C_ChatInfo_SendAddonMessage('ELVUI_VERSIONCHK', E.version, 'GUILD')
+			C_ChatInfo_SendAddonMessage('ElvUIChat_VERSIONCHK', E.version, 'GUILD')
 		end
 
 		SendMessageWaiting = nil
@@ -752,7 +752,7 @@ do
 	local function SendRecieve(_, event, prefix, message, _, sender)
 		if event == 'CHAT_MSG_ADDON' then
 			if sender == PLAYER_NAME then return end
-			if prefix == 'ELVUI_VERSIONCHK' then
+			if prefix == 'ElvUIChat_VERSIONCHK' then
 				local ver, msg, inCombat = E.version, tonumber(message), InCombatLockdown()
 
 				E.UserList[E:StripMyRealm(sender)] = msg
@@ -761,9 +761,9 @@ do
 					E:Print(L["ElvUIChat is out of date. You can download the newest version from www.tukui.org. Get premium membership and have ElvUIChat automatically updated with the Tukui Client!"])
 
 					if msg and ((msg - ver) >= 0.05) and not inCombat then
-						E.PopupDialogs.ELVUI_UPDATE_AVAILABLE.text = L["ElvUIChat is five or more revisions out of date. You can download the newest version from www.tukui.org. Get premium membership and have ElvUIChat automatically updated with the Tukui Client!"]..format('|n|nSender %s : Version %s', sender, msg)
+						E.PopupDialogs.ElvUIChat_UPDATE_AVAILABLE.text = L["ElvUIChat is five or more revisions out of date. You can download the newest version from www.tukui.org. Get premium membership and have ElvUIChat automatically updated with the Tukui Client!"]..format('|n|nSender %s : Version %s', sender, msg)
 
-						E:StaticPopup_Show('ELVUI_UPDATE_AVAILABLE')
+						E:StaticPopup_Show('ElvUIChat_UPDATE_AVAILABLE')
 					end
 
 					E.recievedOutOfDateMessage = true
@@ -786,7 +786,7 @@ do
 		end
 	end
 
-	_G.C_ChatInfo.RegisterAddonMessagePrefix('ELVUI_VERSIONCHK')
+	_G.C_ChatInfo.RegisterAddonMessagePrefix('ElvUIChat_VERSIONCHK')
 
 	local f = CreateFrame('Frame')
 	f:RegisterEvent('CHAT_MSG_ADDON')

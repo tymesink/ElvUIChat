@@ -325,7 +325,7 @@ function S:Ace3_RefreshTree(scrollToSelection)
 	if not self.tree then return end
 
 	self.border:ClearAllPoints()
-	if self.userdata and self.userdata.option and self.userdata.option.childGroups == 'ElvUI_HiddenTree' then
+	if self.userdata and self.userdata.option and self.userdata.option.childGroups == 'ElvUIChat_HiddenTree' then
 		self.border:Point('TOPLEFT', self.treeframe, 'TOPRIGHT', 1, 13)
 		self.border:Point('BOTTOMRIGHT', self.frame, 'BOTTOMRIGHT', 6, 0)
 		self.treeframe:Hide()

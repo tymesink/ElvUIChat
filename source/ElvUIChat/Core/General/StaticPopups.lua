@@ -28,7 +28,7 @@ local DOWNLOAD_URL = 'https://www.tukui.org/download.php?ui=elvui'
 E.PopupDialogs = {}
 E.StaticPopup_DisplayedFrames = {}
 
-E.PopupDialogs.ELVUI_UPDATE_AVAILABLE = {
+E.PopupDialogs.ElvUIChat_UPDATE_AVAILABLE = {
 	text = L["ElvUIChat is five or more revisions out of date. You can download the newest version from www.tukui.org. Get premium membership and have ElvUIChat automatically updated with the Tukui Client!"],
 	hasEditBox = 1,
 	OnShow = function(self)
@@ -69,7 +69,7 @@ E.PopupDialogs.ELVUI_UPDATE_AVAILABLE = {
 	showAlert = 1,
 }
 
-E.PopupDialogs.ELVUI_EDITBOX = {
+E.PopupDialogs.ElvUIChat_EDITBOX = {
 	text = E.title,
 	button1 = OKAY,
 	hasEditBox = 1,
@@ -130,7 +130,7 @@ E.PopupDialogs.CONFIRM_LOSE_BINDING_CHANGES = {
 	showAlert = 1,
 }
 
-E.PopupDialogs.TUKUI_ELVUI_INCOMPATIBLE = {
+E.PopupDialogs.TUKUI_ElvUIChat_INCOMPATIBLE = {
 	text = L["Oh lord, you have got ElvUIChat and Tukui both enabled at the same time. Select an addon to disable."],
 	OnAccept = function() DisableAddOn('ElvUIChat'); ReloadUI() end,
 	OnCancel = function() DisableAddOn('Tukui'); ReloadUI() end,
@@ -535,7 +535,7 @@ function E:StaticPopup_FindVisible(which, data)
 		return nil
 	end
 	for index = 1, MAX_STATIC_POPUPS, 1 do
-		local frame = _G['ElvUI_StaticPopup'..index]
+		local frame = _G['ElvUIChat_StaticPopup'..index]
 		if frame and frame:IsShown() and (frame.which == which) and (not info.multiple or (frame.data == data)) then
 			return frame
 		end
@@ -632,7 +632,7 @@ function E:StaticPopup_Show(which, text_arg1, text_arg2, data)
 
 	if info.cancels then
 		for index = 1, MAX_STATIC_POPUPS, 1 do
-			local frame = _G['ElvUI_StaticPopup'..index]
+			local frame = _G['ElvUIChat_StaticPopup'..index]
 			if frame:IsShown() and (frame.which == info.cancels) then
 				frame:Hide()
 
@@ -663,7 +663,7 @@ function E:StaticPopup_Show(which, text_arg1, text_arg2, data)
 			index = info.preferredIndex
 		end
 		for i = index, MAX_STATIC_POPUPS do
-			local frame = _G['ElvUI_StaticPopup'..i]
+			local frame = _G['ElvUIChat_StaticPopup'..i]
 			if frame and not frame:IsShown() then
 				dialog = frame
 				break
@@ -673,7 +673,7 @@ function E:StaticPopup_Show(which, text_arg1, text_arg2, data)
 		--If dialog not found and there's a preferredIndex then try to find an available frame before the preferredIndex
 		if not dialog and info.preferredIndex then
 			for i = 1, info.preferredIndex do
-				local frame = _G['ElvUI_StaticPopup'..i]
+				local frame = _G['ElvUIChat_StaticPopup'..i]
 				if frame and not frame:IsShown() then
 					dialog = frame
 					break
@@ -917,7 +917,7 @@ end
 
 function E:StaticPopup_Hide(which, data)
 	for index = 1, MAX_STATIC_POPUPS, 1 do
-		local dialog = _G['ElvUI_StaticPopup'..index]
+		local dialog = _G['ElvUIChat_StaticPopup'..index]
 		if dialog.which == which and (not data or (data == dialog.data)) then
 			dialog:Hide()
 		end
@@ -992,7 +992,7 @@ function E:Contruct_StaticPopups()
 	E.StaticPopupFrames = {}
 
 	for index = 1, MAX_STATIC_POPUPS do
-		local popup = CreateFrame('Frame', 'ElvUI_StaticPopup'..index, E.UIParent, 'StaticPopupTemplate')
+		local popup = CreateFrame('Frame', 'ElvUIChat_StaticPopup'..index, E.UIParent, 'StaticPopupTemplate')
 		popup:SetID(index)
 
 		--Fix Scripts
@@ -1001,12 +1001,12 @@ function E:Contruct_StaticPopups()
 		popup:SetScript('OnUpdate', E.StaticPopup_OnUpdate)
 		popup:SetScript('OnEvent', E.StaticPopup_OnEvent)
 
-		_G['ElvUI_StaticPopup'..index..'EditBox']:SetScript('OnEnterPressed', E.StaticPopup_EditBoxOnEnterPressed)
-		_G['ElvUI_StaticPopup'..index..'EditBox']:SetScript('OnEscapePressed', E.StaticPopup_EditBoxOnEscapePressed)
-		_G['ElvUI_StaticPopup'..index..'EditBox']:SetScript('OnTextChanged', E.StaticPopup_EditBoxOnTextChanged)
+		_G['ElvUIChat_StaticPopup'..index..'EditBox']:SetScript('OnEnterPressed', E.StaticPopup_EditBoxOnEnterPressed)
+		_G['ElvUIChat_StaticPopup'..index..'EditBox']:SetScript('OnEscapePressed', E.StaticPopup_EditBoxOnEscapePressed)
+		_G['ElvUIChat_StaticPopup'..index..'EditBox']:SetScript('OnTextChanged', E.StaticPopup_EditBoxOnTextChanged)
 
-		_G['ElvUI_StaticPopup'..index..'CheckButton'] = CreateFrame('CheckButton', 'ElvUI_StaticPopup'..index..'CheckButton', _G['ElvUI_StaticPopup'..index], 'UICheckButtonTemplate')
-		_G['ElvUI_StaticPopup'..index..'CheckButton']:SetScript('OnClick', E.StaticPopup_CheckButtonOnClick)
+		_G['ElvUIChat_StaticPopup'..index..'CheckButton'] = CreateFrame('CheckButton', 'ElvUIChat_StaticPopup'..index..'CheckButton', _G['ElvUIChat_StaticPopup'..index], 'UICheckButtonTemplate')
+		_G['ElvUIChat_StaticPopup'..index..'CheckButton']:SetScript('OnClick', E.StaticPopup_CheckButtonOnClick)
 
 		--Skin
 		if E.Retail then
@@ -1015,7 +1015,7 @@ function E:Contruct_StaticPopups()
 		popup:SetTemplate('Transparent')
 
 		for i = 1, 4 do
-			local button = _G['ElvUI_StaticPopup'..index..'Button'..i]
+			local button = _G['ElvUIChat_StaticPopup'..index..'Button'..i]
 			button:SetFrameLevel(button:GetFrameLevel() + 1)
 			button:SetScript('OnClick', function(btn)
 				E.StaticPopup_OnClick(btn:GetParent(), btn:GetID())
@@ -1024,25 +1024,25 @@ function E:Contruct_StaticPopups()
 			Skins:HandleButton(button)
 		end
 
-		_G['ElvUI_StaticPopup'..index..'CheckButton']:Size(24)
-		_G['ElvUI_StaticPopup'..index..'CheckButtonText']:FontTemplate(nil, nil, '')
-		_G['ElvUI_StaticPopup'..index..'CheckButtonText']:SetTextColor(1,0.17,0.26)
-		_G['ElvUI_StaticPopup'..index..'CheckButtonText']:Point('LEFT', _G['ElvUI_StaticPopup'..index..'CheckButton'], 'RIGHT', 4, 1)
-		Skins:HandleCheckBox(_G['ElvUI_StaticPopup'..index..'CheckButton'])
+		_G['ElvUIChat_StaticPopup'..index..'CheckButton']:Size(24)
+		_G['ElvUIChat_StaticPopup'..index..'CheckButtonText']:FontTemplate(nil, nil, '')
+		_G['ElvUIChat_StaticPopup'..index..'CheckButtonText']:SetTextColor(1,0.17,0.26)
+		_G['ElvUIChat_StaticPopup'..index..'CheckButtonText']:Point('LEFT', _G['ElvUIChat_StaticPopup'..index..'CheckButton'], 'RIGHT', 4, 1)
+		Skins:HandleCheckBox(_G['ElvUIChat_StaticPopup'..index..'CheckButton'])
 
-		_G['ElvUI_StaticPopup'..index..'EditBox']:SetFrameLevel(_G['ElvUI_StaticPopup'..index..'EditBox']:GetFrameLevel()+1)
-		Skins:HandleEditBox(_G['ElvUI_StaticPopup'..index..'EditBox'])
-		Skins:HandleEditBox(_G['ElvUI_StaticPopup'..index..'MoneyInputFrameGold'])
-		Skins:HandleEditBox(_G['ElvUI_StaticPopup'..index..'MoneyInputFrameSilver'])
-		Skins:HandleEditBox(_G['ElvUI_StaticPopup'..index..'MoneyInputFrameCopper'])
-		_G['ElvUI_StaticPopup'..index..'EditBox'].backdrop:Point('TOPLEFT', -2, -4)
-		_G['ElvUI_StaticPopup'..index..'EditBox'].backdrop:Point('BOTTOMRIGHT', 2, 4)
-		_G['ElvUI_StaticPopup'..index..'ItemFrameNameFrame']:Kill()
-		_G['ElvUI_StaticPopup'..index..'ItemFrame']:GetNormalTexture():Kill()
-		_G['ElvUI_StaticPopup'..index..'ItemFrame']:SetTemplate()
-		_G['ElvUI_StaticPopup'..index..'ItemFrame']:StyleButton()
-		_G['ElvUI_StaticPopup'..index..'ItemFrameIconTexture']:SetTexCoord(unpack(E.TexCoords))
-		_G['ElvUI_StaticPopup'..index..'ItemFrameIconTexture']:SetInside()
+		_G['ElvUIChat_StaticPopup'..index..'EditBox']:SetFrameLevel(_G['ElvUIChat_StaticPopup'..index..'EditBox']:GetFrameLevel()+1)
+		Skins:HandleEditBox(_G['ElvUIChat_StaticPopup'..index..'EditBox'])
+		Skins:HandleEditBox(_G['ElvUIChat_StaticPopup'..index..'MoneyInputFrameGold'])
+		Skins:HandleEditBox(_G['ElvUIChat_StaticPopup'..index..'MoneyInputFrameSilver'])
+		Skins:HandleEditBox(_G['ElvUIChat_StaticPopup'..index..'MoneyInputFrameCopper'])
+		_G['ElvUIChat_StaticPopup'..index..'EditBox'].backdrop:Point('TOPLEFT', -2, -4)
+		_G['ElvUIChat_StaticPopup'..index..'EditBox'].backdrop:Point('BOTTOMRIGHT', 2, 4)
+		_G['ElvUIChat_StaticPopup'..index..'ItemFrameNameFrame']:Kill()
+		_G['ElvUIChat_StaticPopup'..index..'ItemFrame']:GetNormalTexture():Kill()
+		_G['ElvUIChat_StaticPopup'..index..'ItemFrame']:SetTemplate()
+		_G['ElvUIChat_StaticPopup'..index..'ItemFrame']:StyleButton()
+		_G['ElvUIChat_StaticPopup'..index..'ItemFrameIconTexture']:SetTexCoord(unpack(E.TexCoords))
+		_G['ElvUIChat_StaticPopup'..index..'ItemFrameIconTexture']:SetInside()
 
 		E.StaticPopupFrames[index] = popup
 	end
