@@ -59,8 +59,8 @@ local C_Club_GetInfoFromLastCommunityChatLine = C_Club.GetInfoFromLastCommunityC
 local C_DateAndTime_GetCurrentCalendarTime = C_DateAndTime.GetCurrentCalendarTime
 local C_LFGList_GetActivityInfoTable = C_LFGList.GetActivityInfoTable
 local C_LFGList_GetSearchResultInfo = C_LFGList.GetSearchResultInfo
-local C_SocialGetLastItem = C_Social.GetLastItem
-local C_SocialIsSocialEnabled = C_Social.IsSocialEnabled
+--local C_SocialGetLastItem = C_Social.GetLastItem
+--local C_SocialIsSocialEnabled = C_Social.IsSocialEnabled
 local C_VoiceChat_GetMemberName = C_VoiceChat.GetMemberName
 local C_VoiceChat_SetPortraitTexture = C_VoiceChat.SetPortraitTexture
 
@@ -1890,12 +1890,12 @@ function CH:ChatFrame_MessageEventHandler(frame, event, arg1, arg2, arg3, arg4, 
 			frame:AddMessage(arg1, info.r, info.g, info.b, info.id, nil, nil, isHistory, historyTime)
 		elseif chatType == 'LOOT' then
 			-- Append [Share] hyperlink if this is a valid social item and you are the looter.
-			if arg12 == E.myguid and C_SocialIsSocialEnabled() then
-				local itemID, creationContext = GetItemInfoFromHyperlink(arg1)
-				if itemID and C_SocialGetLastItem() == itemID then
-					arg1 = arg1 .. ' ' .. _G.Social_GetShareItemLink(creationContext, true)
-				end
-			end
+			-- if arg12 == E.myguid and C_SocialIsSocialEnabled() then
+			-- 	local itemID, creationContext = GetItemInfoFromHyperlink(arg1)
+			-- 	if itemID and C_SocialGetLastItem() == itemID then
+			-- 		arg1 = arg1 .. ' ' .. _G.Social_GetShareItemLink(creationContext, true)
+			-- 	end
+			-- end
 			frame:AddMessage(arg1, info.r, info.g, info.b, info.id, nil, nil, isHistory, historyTime)
 		elseif strsub(chatType,1,7) == 'COMBAT_' then
 			frame:AddMessage(arg1, info.r, info.g, info.b, info.id, nil, nil, isHistory, historyTime)
@@ -1905,24 +1905,24 @@ function CH:ChatFrame_MessageEventHandler(frame, event, arg1, arg2, arg3, arg4, 
 			frame:AddMessage(arg1, info.r, info.g, info.b, info.id, nil, nil, isHistory, historyTime)
 		elseif strsub(chatType,1,11) == 'ACHIEVEMENT' then
 			-- Append [Share] hyperlink
-			if arg12 == E.myguid and C_SocialIsSocialEnabled() then
-				local achieveID = GetAchievementInfoFromHyperlink(arg1)
-				if achieveID then
-					arg1 = arg1 .. ' ' .. _G.Social_GetShareAchievementLink(achieveID, true)
-				end
-			end
+			-- if arg12 == E.myguid and C_SocialIsSocialEnabled() then
+			-- 	local achieveID = GetAchievementInfoFromHyperlink(arg1)
+			-- 	if achieveID then
+			-- 		arg1 = arg1 .. ' ' .. _G.Social_GetShareAchievementLink(achieveID, true)
+			-- 	end
+			-- end
 			frame:AddMessage(format(arg1, GetPlayerLink(arg2, format('[%s]', coloredName))), info.r, info.g, info.b, info.id, nil, nil, isHistory, historyTime)
 		elseif strsub(chatType,1,18) == 'GUILD_ACHIEVEMENT' then
 			local message = format(arg1, GetPlayerLink(arg2, format('[%s]', coloredName)))
-			if C_SocialIsSocialEnabled() then
-				local achieveID = GetAchievementInfoFromHyperlink(arg1)
-				if achieveID then
-					local isGuildAchievement = select(12, GetAchievementInfo(achieveID))
-					if isGuildAchievement then
-						message = message .. ' ' .. _G.Social_GetShareAchievementLink(achieveID, true)
-					end
-				end
-			end
+			-- if C_SocialIsSocialEnabled() then
+			-- 	local achieveID = GetAchievementInfoFromHyperlink(arg1)
+			-- 	if achieveID then
+			-- 		local isGuildAchievement = select(12, GetAchievementInfo(achieveID))
+			-- 		if isGuildAchievement then
+			-- 			message = message .. ' ' .. _G.Social_GetShareAchievementLink(achieveID, true)
+			-- 		end
+			-- 	end
+			-- end
 			frame:AddMessage(message, info.r, info.g, info.b, info.id, nil, nil, isHistory, historyTime)
 		elseif chatType == 'IGNORED' then
 			frame:AddMessage(format(_G.CHAT_IGNORED, arg2), info.r, info.g, info.b, info.id, nil, nil, isHistory, historyTime)
