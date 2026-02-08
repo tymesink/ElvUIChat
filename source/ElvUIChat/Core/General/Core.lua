@@ -167,31 +167,15 @@ E.Curves = { -- Midnight Color Curves (nil values created later)
 	}
 }
 
--- This frame everything in ElvUI should be anchored to for Eyefinity support.
-E.UIParent = CreateFrame('Frame', 'ElvUIParent', UIParent)
-E.UIParent:SetFrameLevel(UIParent:GetFrameLevel())
-E.UIParent:SetSize(E.screenWidth, E.screenHeight)
-E.UIParent:SetPoint('BOTTOM')
-E.UIParent.origHeight = E.UIParent:GetHeight()
+-- Chat-only: no custom parent needed; use the native UIParent while keeping the reference for callers.
+E.UIParent = UIParent
+_G.ElvUIParent = UIParent
 E.snapBars[#E.snapBars + 1] = E.UIParent
-
--- ElvUIChat: We don't have UnitFrames/oUF, so UFParent not needed
--- E.UFParent = _G.ElvUF_UFParentFrameHider -- created in oUF
--- E.UFParent:SetParent(E.UIParent)
--- E.UFParent:SetFrameStrata('LOW')
 
 E.HiddenFrame = CreateFrame('Frame', nil, UIParent)
 E.HiddenFrame:SetPoint('BOTTOM')
 E.HiddenFrame:SetSize(1,1)
 E.HiddenFrame:Hide()
-
--- ElvUIChat: We don't have UnitFrames, so skip aurafilters
--- do -- used in options
--- 	E.DEFAULT_FILTER = {}
--- 	for filter, tbl in pairs(G.unitframe.aurafilters) do
--- 		E.DEFAULT_FILTER[filter] = tbl.type
--- 	end
--- end
 E.DEFAULT_FILTER = {}
 
 do

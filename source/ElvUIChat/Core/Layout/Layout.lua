@@ -17,8 +17,6 @@ end
 
 function LO:Initialize()
 	LO.Initialized = true
-	LO:CreateChatPanels()
-	LO:SetDataPanelStyle()
 end
 
 local function finishFade(self)
@@ -87,6 +85,8 @@ function HideBothChat()
 end
 
 function LO:ToggleChatTabPanels(rightOverride, leftOverride)
+	if not _G.LeftChatTab then return end
+
 	if leftOverride or not E.db.chat.panelTabBackdrop then
 		_G.LeftChatTab:Hide()
 	else
@@ -132,6 +132,8 @@ function LO:RefreshChatMovers()
 end
 
 function LO:RepositionChatDataPanels()
+	if not (_G.LeftChatTab and _G.LeftChatPanel and _G.LeftChatDataPanel and _G.LeftChatToggleButton) then return end
+
 	local LeftChatTab = _G.LeftChatTab
 	local LeftChatPanel = _G.LeftChatPanel
 	local LeftChatDataPanel = _G.LeftChatDataPanel
@@ -163,6 +165,8 @@ function LO:RepositionChatDataPanels()
 end
 
 function LO:SetChatTabStyle()
+	if not _G.LeftChatTab then return end
+
 	local tabStyle = (E.db.chat.panelTabTransparency and 'Transparent') or nil
 	local glossTex = (not tabStyle and true) or nil
 
@@ -170,6 +174,8 @@ function LO:SetChatTabStyle()
 end
 
 function LO:ToggleChatPanels()
+	if not (_G.LeftChatPanel and _G.LeftChatDataPanel and _G.LeftChatToggleButton) then return end
+
 	local showLeftPanel = E.db.datatexts.panels.LeftChatDataPanel.enable
 	_G.LeftChatDataPanel:SetShown(showLeftPanel)
 
@@ -205,66 +211,11 @@ function LO:ResaveChatPosition()
 end
 
 function LO:CreateChatPanels()
-	--Left Chat
-	local lchat = CreateFrame('Frame', 'LeftChatPanel', E.UIParent)
-	lchat:SetFrameStrata('BACKGROUND')
-	lchat:SetFrameLevel(300)
-	lchat:Size(100, 100)
-	lchat:Point('BOTTOMLEFT', E.UIParent, 4, 4)
-	lchat:CreateBackdrop('Transparent', nil, nil, nil, nil, nil, nil, true)
-	lchat.backdrop.callbackBackdropColor = CH.Panel_ColorUpdate
-	lchat.FadeObject = {finishedFunc = finishFade, finishedArg1 = lchat, finishedFuncKeep = true}
-	-- ElvUIChat: Removed mover - left chat panel doesn't need manual positioning
-
-	--Background Texture
-	local lchattex = lchat:CreateTexture(nil, 'OVERLAY')
-	lchattex:SetInside()
-	lchattex:SetTexture(E.db.chat.panelBackdropNameLeft)
-	lchattex:SetAlpha(E.db.general.backdropfadecolor.a - 0.7 > 0 and E.db.general.backdropfadecolor.a - 0.7 or 0.5)
-	lchat.tex = lchattex
-
-	--Left Chat Tab
-	CreateFrame('Frame', 'LeftChatTab', lchat)
-
-	--Left Chat Data Panel
-	local lchatdp = CreateFrame('Frame', 'LeftChatDataPanel', lchat)
-
-	--Left Chat Toggle Button
-	local lchattb = CreateFrame('Button', 'LeftChatToggleButton', E.UIParent)
-	lchattb:SetNormalTexture(E.Media.Textures.ArrowUp)
-	lchattb:SetFrameStrata('BACKGROUND')
-	lchattb:SetFrameLevel(301)
-	lchattb:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
-	lchattb:SetScript('OnEnter', ChatButton_OnEnter)
-	lchattb:SetScript('OnLeave', ChatButton_OnLeave)
-	lchattb:SetScript('OnClick', function(lcb, btn)
-		if btn == 'LeftButton' then
-			ChatButton_OnClick(lcb)
-		end
-	end)
-
-	local lchattbtex = lchattb:GetNormalTexture()
-	lchattbtex:SetRotation(E.Skins.ArrowRotation.left)
-	lchattbtex:ClearAllPoints()
-	lchattbtex:Point('CENTER')
-	lchattbtex:Size(12)
-	lchattb.texture = lchattbtex
-	lchattb.OnEnter = ChatButton_OnEnter
-	lchattb.OnLeave = ChatButton_OnLeave
-	lchattb.parent = lchat
-	
-	--Load Settings
-	local fadeToggle = E.db.chat.fadeChatToggles
-	if E.db.LeftChatPanelFaded then
-		if fadeToggle then
-			_G.LeftChatToggleButton:SetAlpha(0)
-		end
-
-		lchat:Hide()
-	end
-	
-	LO:ToggleChatPanels()
-	LO:SetChatTabStyle()
+	-- Chat-only build: no dedicated chat panel scaffolding
+	_G.LeftChatPanel = nil
+	_G.LeftChatTab = nil
+	_G.LeftChatDataPanel = nil
+	_G.LeftChatToggleButton = nil
 end
 
 E:RegisterModule(LO:GetName())

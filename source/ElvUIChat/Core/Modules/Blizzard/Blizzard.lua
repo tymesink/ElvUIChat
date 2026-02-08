@@ -2,73 +2,23 @@ local E, L, V, P, G = unpack(ElvUIChat)
 local B = E:GetModule('Blizzard')
 
 local _G = _G
-local UnitXP = UnitXP
-local UnitXPMax = UnitXPMax
-local GetRewardXP = GetRewardXP
-local GetQuestLogRewardXP = GetQuestLogRewardXP
-local C_QuestLog_ShouldShowQuestRewards = C_QuestLog.ShouldShowQuestRewards
-local C_QuestLog_GetSelectedQuest = C_QuestLog.GetSelectedQuest
-
---This changes the growth direction of the toast frame depending on position of the mover
-local function PostMove(mover)
-	local x, y = mover:GetCenter()
-	local top = E.UIParent:GetTop()
-	local right = E.UIParent:GetRight()
-
-	local point
-	if y > (top*0.5) then
-		point = (x > (right*0.5)) and 'TOPRIGHT' or 'TOPLEFT'
-	else
-		point = (x > (right*0.5)) and 'BOTTOMRIGHT' or 'BOTTOMLEFT'
-	end
-	mover.anchorPoint = point
-
-	mover.parent:ClearAllPoints()
-	mover.parent:Point(point, mover)
-end
-
-function B:RepositionFrame(frame, _, anchor)
-	if not frame or not frame.mover then return end -- mover removed in ElvUIChat; skip reposition when missing
-
-	if anchor ~= frame.mover then
-		frame:ClearAllPoints()
-		frame:Point(frame.mover.anchorPoint or 'TOPLEFT', frame.mover, frame.mover.anchorPoint or 'TOPLEFT')
-	end
-end
-
-function B:QuestXPPercent()
-	if not E.db.general.questXPPercent then return end
-
-	local unitXP, unitXPMax = UnitXP('player'), UnitXPMax('player')
-	if _G.QuestInfoFrame.questLog then
-		local selectedQuest = C_QuestLog_GetSelectedQuest()
-		if C_QuestLog_ShouldShowQuestRewards(selectedQuest) then
-			local xp = GetQuestLogRewardXP()
-			if xp and xp > 0 then
-				local text = _G.MapQuestInfoRewardsFrame.XPFrame.Name:GetText()
-				if text then _G.MapQuestInfoRewardsFrame.XPFrame.Name:SetFormattedText('%s (|cff4beb2c+%.2f%%|r)', text, (((unitXP + xp) / unitXPMax) - (unitXP / unitXPMax))*100) end
-			end
-		end
-	else
-		local xp = GetRewardXP()
-		if xp and xp > 0 then
-			local text = _G.QuestInfoXPFrame.ValueText:GetText()
-			if text then _G.QuestInfoXPFrame.ValueText:SetFormattedText('%s (|cff4beb2c+%.2f%%|r)', text, (((unitXP + xp) / unitXPMax) - (unitXP / unitXPMax))*100) end
-		end
-	end
-end
-
 function B:Initialize()
 	B.Initialized = true
 
-	B:HandleWidgets()
+	-- ElvUIChat: Guard Edit Mode selection math (Retail-only)
+	-- local EditModeSystemMixin = _G.EditModeSystemMixin
+	-- if EditModeSystemMixin and EditModeSystemMixin.GetScaledSelectionSides and not B._patchedSelectionSides then
+	-- 	local origGetScaledSelectionSides = EditModeSystemMixin.GetScaledSelectionSides
+	-- 	function EditModeSystemMixin:GetScaledSelectionSides(...)
+	-- 		local left, bottom, width, height, scale = origGetScaledSelectionSides(self, ...)
+	-- 		if not left or not bottom or not width or not height then
+	-- 			return left or 0, bottom or 0, width or 0, height or 0, scale or 1
+	-- 		end
 
-	-- ElvUIChat: Always hook quest XP percent display (Retail-only)
-	B:SecureHook('QuestInfo_Display', 'QuestXPPercent')
-	
-	-- Battle.Net Frame
-	_G.BNToastFrame:Point('TOPRIGHT', _G.MMHolder or _G.Minimap, 'BOTTOMRIGHT', 0, -10)
-	-- ElvUIChat: Removed mover - BNet frame doesn't need manual positioning
-	B:SecureHook(_G.BNToastFrame, 'SetPoint', 'RepositionFrame')
+	-- 		return left, bottom, width, height, scale
+	-- 	end
+
+	-- 	B._patchedSelectionSides = true
+	-- end
 end
 E:RegisterModule(B:GetName())

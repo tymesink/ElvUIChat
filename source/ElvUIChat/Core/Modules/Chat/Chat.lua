@@ -825,19 +825,25 @@ function CH:EditBoxOnKeyDown(key)
 end
 
 function CH:EditBoxFocusGained()
-	if not _G.LeftChatPanel:IsShown() then
-		_G.LeftChatPanel.editboxforced = true
-		_G.LeftChatToggleButton:OnEnter()
+	local toggle = _G.LeftChatToggleButton
+	local panel = _G.LeftChatPanel
+
+	if panel and toggle and not panel:IsShown() then
+		panel.editboxforced = true
+		toggle:OnEnter()
 		self:Show()
 	end
 end
 
 function CH:EditBoxFocusLost()
-	if _G.LeftChatPanel.editboxforced then
-		_G.LeftChatPanel.editboxforced = nil
+	local toggle = _G.LeftChatToggleButton
+	local panel = _G.LeftChatPanel
 
-		if _G.LeftChatPanel:IsShown() then
-			_G.LeftChatToggleButton:OnLeave()
+	if panel and panel.editboxforced then
+		panel.editboxforced = nil
+
+		if panel:IsShown() and toggle then
+			toggle:OnLeave()
 			self:Hide()
 		end
 	end
@@ -989,7 +995,7 @@ function CH:StyleChat(frame)
 
 	-- editbox stuff
 	editbox:SetAltArrowKeyMode(CH.db.useAltKey)
-	editbox:SetAllPoints(_G.LeftChatDataPanel)
+	editbox:SetAllPoints(frame)
 	editbox:HookScript('OnTextChanged', CH.EditBoxOnTextChanged)
 	editbox:HookScript('OnEditFocusGained', CH.EditBoxFocusGained)
 	editbox:HookScript('OnEditFocusLost', CH.EditBoxFocusLost)
@@ -1057,7 +1063,7 @@ function CH:AddMessageEdits(frame, msg, isHistory, historyTime)
 	if isHistory == 'ElvUI_ChatHistory' then historyTimestamp = historyTime end
 
 	if CH.db.timeStampFormat and CH.db.timeStampFormat ~= 'NONE' then
-		local timeStamp = BetterDate(CH.db.timeStampFormat, historyTimestamp or E:GetDateTime(CH.db.timeStampLocalTime, true))
+		local timeStamp = BetterDate(CH.db.timeStampFormat, historyTimestamp or time())
 		timeStamp = gsub(timeStamp, ' ', '')
 		timeStamp = gsub(timeStamp, 'AM', ' AM')
 		timeStamp = gsub(timeStamp, 'PM', ' PM')
@@ -1335,7 +1341,7 @@ function CH:FindChatWindows()
 					if CH.db.panelSnapLeftID == index then
 						left = chat
 					end
-				elseif E:FramesOverlap(chat, _G.LeftChatPanel) then
+				elseif _G.LeftChatPanel and E:FramesOverlap(chat, _G.LeftChatPanel) then
 					CH.db.panelSnapLeftID = index
 					left = chat
 				end
@@ -1444,8 +1450,12 @@ function CH:ToggleCopyChatButtons()
 end
 
 function CH:RefreshToggleButtons()
-	_G.LeftChatToggleButton:SetAlpha(E.db.LeftChatPanelFaded and CH.db.fadeChatToggles and 0 or 1)
-	_G.LeftChatToggleButton:SetShown(not CH.db.hideChatToggles and E.db.datatexts.panels.LeftChatDataPanel.enable)
+	local toggle = _G.LeftChatToggleButton
+	local showLeft = E.db.datatexts and E.db.datatexts.panels and E.db.datatexts.panels.LeftChatDataPanel and E.db.datatexts.panels.LeftChatDataPanel.enable
+	if toggle then
+		toggle:SetAlpha(E.db.LeftChatPanelFaded and CH.db.fadeChatToggles and 0 or 1)
+		toggle:SetShown(not CH.db.hideChatToggles and showLeft)
+	end
 
 	local rightToggle = _G.RightChatToggleButton
 	-- TODO: right toggle absent when no right chat panel; revisit if right panel returns
@@ -1537,14 +1547,16 @@ function CH:PositionChat(chat)
 
 	local BASE_OFFSET = 32
 	if chat == CH.LeftChatWindow then
-		local LOG_OFFSET = chat:GetID() == 2 and (_G.LeftChatTab:GetHeight() + 4) or 0
+		local leftTab = _G.LeftChatTab
+		local LOG_OFFSET = (chat:GetID() == 2 and leftTab and leftTab:GetHeight() + 4) or 0
 
 		-- Preserve user anchoring (Edit Mode); only adjust size
 		chat:SetSize(CH.db.panelWidth - 10, CH.db.panelHeight - BASE_OFFSET - LOG_OFFSET)
 
 		CH:ShowBackground(chat.Background, false)
 	elseif chat == CH.RightChatWindow and _G.RightChatPanel then -- TODO: skip when right panel is removed; revisit if we restore it
-		local LOG_OFFSET = chat:GetID() == 2 and (_G.LeftChatTab:GetHeight() + 4) or 0
+		local leftTab = _G.LeftChatTab
+		local LOG_OFFSET = (chat:GetID() == 2 and leftTab and leftTab:GetHeight() + 4) or 0
 
 		-- Preserve user anchoring (Edit Mode); only adjust size
 		chat:SetSize((CH.db.separateSizes and CH.db.panelWidthRight or CH.db.panelWidth) - 10, (CH.db.separateSizes and CH.db.panelHeightRight or CH.db.panelHeight) - BASE_OFFSET - LOG_OFFSET)
@@ -1556,18 +1568,6 @@ function CH:PositionChat(chat)
 end
 
 function CH:PositionChats()
-	_G.LeftChatPanel:Size(CH.db.panelWidth, CH.db.panelHeight)
-
-	local RightChatPanel = _G.RightChatPanel
-	-- TODO: right chat frame removed in chat-only build; decide if sizing should be retained
-	if RightChatPanel then
-		if CH.db.separateSizes then
-			RightChatPanel:Size(CH.db.panelWidthRight, CH.db.panelHeightRight)
-		else
-			RightChatPanel:Size(CH.db.panelWidth, CH.db.panelHeight)
-		end
-	end
-
 	LO:RepositionChatDataPanels()
 
 	-- don't proceed when chat is disabled
@@ -1581,25 +1581,9 @@ function CH:PositionChats()
 	end
 end
 
-function CH:Panel_ColorUpdate()
-	local panelColor = CH.db.panelColor
-	self:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
-end
+function CH:Panel_ColorUpdate() end
 
-function CH:Panels_ColorUpdate()
-	local panelColor = CH.db.panelColor
-	_G.LeftChatPanel.backdrop:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
-
-	local rightPanel = _G.RightChatPanel
-	-- TODO: right panel/backdrop removed in chat-only build; revisit color updates if re-added
-	if rightPanel and rightPanel.backdrop then
-		rightPanel.backdrop:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
-	end
-
-	if _G.ChatButtonHolder then
-		_G.ChatButtonHolder:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
-	end
-end
+function CH:Panels_ColorUpdate() end
 
 function CH:UpdateChatTabColors()
 	-- don't proceed when chat is disabled
@@ -3005,7 +2989,7 @@ function CH:SaveChatHistory(event, ...)
 
 	if #tempHistory > 0 and not CH:MessageIsProtected(tempHistory[1]) then
 		tempHistory[50] = event
-		tempHistory[51] = E:GetDateTime(CH.db.timeStampLocalTime, true)
+		tempHistory[51] = time()
 
 		local coloredName, battleTag
 		if tempHistory[13] and tempHistory[13] > 0 then coloredName, battleTag = CH:GetBNFriendColor(tempHistory[2], tempHistory[13], true) end
@@ -3466,7 +3450,7 @@ end
 function CH:CreateChatVoicePanel()
 	local Holder = CreateFrame('Frame', 'ElvUIChatVoicePanel', E.UIParent)
 	Holder:ClearAllPoints()
-	Holder:Point('BOTTOMLEFT', _G.LeftChatPanel, 'TOPLEFT', 0, 1)
+	Holder:Point('BOTTOMLEFT', E.UIParent, 'BOTTOMLEFT', 4, 130)
 	Holder:SetTemplate('Transparent', nil, true)
 	Holder:SetBackdropColor(CH.db.panelColor.r, CH.db.panelColor.g, CH.db.panelColor.b, CH.db.panelColor.a)
 	-- ElvUIChat: Removed mover - chat panels don't need manual positioning
