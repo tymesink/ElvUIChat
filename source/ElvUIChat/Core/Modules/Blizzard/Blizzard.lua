@@ -28,6 +28,8 @@ local function PostMove(mover)
 end
 
 function B:RepositionFrame(frame, _, anchor)
+	if not frame or not frame.mover then return end -- mover removed in ElvUIChat; skip reposition when missing
+
 	if anchor ~= frame.mover then
 		frame:ClearAllPoints()
 		frame:Point(frame.mover.anchorPoint or 'TOPLEFT', frame.mover, frame.mover.anchorPoint or 'TOPLEFT')

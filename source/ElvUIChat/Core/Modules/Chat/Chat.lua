@@ -2495,7 +2495,8 @@ function CH:ChatFrame_MessageEventHandler(frame, event, arg1, arg2, arg3, arg4, 
 			-- beep boops
 			local historyType = notChatHistory and not CH.SoundTimer and not strfind(event, '_INFORM') and historyTypes[event]
 			local alertAllow = isProtected or arg2 ~= PLAYER_NAME
-			local alertType = (historyType ~= 'CHANNEL' and CH.db.channelAlerts[historyType]) or (historyType == 'CHANNEL' and CH.db.channelAlerts.CHANNEL[arg9])
+			local channelAlerts = CH.db and CH.db.channelAlerts
+			local alertType = channelAlerts and ((historyType ~= 'CHANNEL' and channelAlerts[historyType]) or (historyType == 'CHANNEL' and channelAlerts.CHANNEL and channelAlerts.CHANNEL[arg9]))
 			if alertType and alertType ~= 'None' and alertAllow and (not CH.db.noAlertInCombat or not InCombatLockdown()) then
 				CH.SoundTimer = E:Delay(5, CH.ThrottleSound)
 				PlaySoundFile(LSM:Fetch('sound', alertType), 'Master')
