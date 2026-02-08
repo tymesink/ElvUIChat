@@ -94,7 +94,7 @@ function B:BuildWidgetHolder(holderName, moverName, moverPoint, localeName, cont
 	if width and height then holder:Size(width, height) end
 
 	holder:Point(point, relativeTo, relativePoint, x, y)
-	E:CreateMover(holder, moverName, localeName, nil, nil, nil, config)
+	-- ElvUIChat: Removed mover - widget holders don't need manual positioning
 
 	container.containerHolder = (holderName and holder) or _G[moverName]
 	container.containerPoint = moverPoint
@@ -113,17 +113,15 @@ function B:HandleWidgets()
 
 	B:BuildWidgetHolder(nil, 'GMMover', 'TOP', L["GM Ticket Frame"], _G.TicketStatusFrame, 'TOPLEFT', E.UIParent, 'TOPLEFT', 250, -5, nil, nil, 'ALL,GENERAL')
 
-	if E.Retail then
-		-- B:BuildWidgetHolder('PowerBarContainerHolder', 'PowerBarContainerMover', 'CENTER', L["PowerBarWidget"], _G.UIWidgetPowerBarContainerFrame, 'TOP', E.UIParent, 'TOP', 0, -75, 100, 20, 'ALL,WIDGETS')
-		-- B:BuildWidgetHolder('MawBuffsBelowMinimapHolder', 'MawBuffsBelowMinimapMover', 'CENTER', L["MawBuffsWidget"], _G.MawBuffsBelowMinimapFrame, 'TOP', _G.Minimap, 'BOTTOM', 0, -25, 250, 50, 'ALL,WIDGETS')
-		-- B:BuildWidgetHolder('EventToastHolder', 'EventToastMover', 'TOP', L["EventToastWidget"], _G.EventToastManagerFrame, 'TOP', E.UIParent, 'TOP', 0, -150, 200, 20, 'ALL,WIDGETS')
-		-- B:BuildWidgetHolder('BossBannerHolder', 'BossBannerMover', 'TOP', L["BossBannerWidget"], _G.BossBanner, 'TOP', E.UIParent, 'TOP', 0, -125, 200, 20, 'ALL,WIDGETS')
-
-		-- handle power bar widgets after reload as Setup will have fired before this
-		-- for _, widget in pairs(_G.UIWidgetPowerBarContainerFrame.widgetFrames) do
-		-- 	B.UIWidgetTemplateStatusBar(widget)
-		-- end
-	end
+	-- ElvUIChat: Widget holders (commented out, Retail-only)
+	-- B:BuildWidgetHolder('PowerBarContainerHolder', 'PowerBarContainerMover', 'CENTER', L["PowerBarWidget"], _G.UIWidgetPowerBarContainerFrame, 'TOP', E.UIParent, 'TOP', 0, -75, 100, 20, 'ALL,WIDGETS')
+	-- B:BuildWidgetHolder('MawBuffsBelowMinimapHolder', 'MawBuffsBelowMinimapMover', 'CENTER', L["MawBuffsWidget"], _G.MawBuffsBelowMinimapFrame, 'TOP', _G.Minimap, 'BOTTOM', 0, -25, 250, 50, 'ALL,WIDGETS')
+	-- B:BuildWidgetHolder('EventToastHolder', 'EventToastMover', 'TOP', L["EventToastWidget"], _G.EventToastManagerFrame, 'TOP', E.UIParent, 'TOP', 0, -150, 200, 20, 'ALL,WIDGETS')
+	-- B:BuildWidgetHolder('BossBannerHolder', 'BossBannerMover', 'TOP', L["BossBannerWidget"], _G.BossBanner, 'TOP', E.UIParent, 'TOP', 0, -125, 200, 20, 'ALL,WIDGETS')
+	-- handle power bar widgets after reload as Setup will have fired before this
+	-- for _, widget in pairs(_G.UIWidgetPowerBarContainerFrame.widgetFrames) do
+	-- 	B.UIWidgetTemplateStatusBar(widget)
+	-- end
 
 	-- _G.DurabilityFrame:SetFrameStrata('HIGH')
 	-- local duraWidth, duraHeight = _G.DurabilityFrame:GetSize()

@@ -94,7 +94,8 @@ if EditModeManagerFrame and FriendsFrameStatusDropDown and (tonumber(EDITMAN_OPE
 end
 
 -- https://www.townlong-yak.com/addons/taintless/fixes/ObjectiveTrackerUpdate
-if ObjectiveTrackerFrame and (tonumber(OBJTRACK_DELAYUPDATE_PATCH_VERSION) or 0) < 1 then
+-- ElvUIChat: Check if ObjectiveTracker_Update exists (removed in Midnight/TWW)
+if ObjectiveTrackerFrame and ObjectiveTracker_Update and (tonumber(OBJTRACK_DELAYUPDATE_PATCH_VERSION) or 0) < 1 then
 	OBJTRACK_DELAYUPDATE_PATCH_VERSION = 1
 	local counter, didDelayUpdate, delayFrameCount = (CreateFrame("Frame", nil, ObjectiveTrackerFrame))
 	counter:Hide()

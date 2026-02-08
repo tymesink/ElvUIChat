@@ -61,15 +61,12 @@ function B:Initialize()
 
 	B:HandleWidgets()
 
-	if E.Retail then
-		--Add (+X%) to quest rewards experience text
-		B:SecureHook('QuestInfo_Display', 'QuestXPPercent')
-	end
+	-- ElvUIChat: Always hook quest XP percent display (Retail-only)
+	B:SecureHook('QuestInfo_Display', 'QuestXPPercent')
 	
 	-- Battle.Net Frame
 	_G.BNToastFrame:Point('TOPRIGHT', _G.MMHolder or _G.Minimap, 'BOTTOMRIGHT', 0, -10)
-	E:CreateMover(_G.BNToastFrame, 'BNETMover', L["BNet Frame"], nil, nil, PostMove)
-	_G.BNToastFrame.mover:Size(_G.BNToastFrame:GetSize())
+	-- ElvUIChat: Removed mover - BNet frame doesn't need manual positioning
 	B:SecureHook(_G.BNToastFrame, 'SetPoint', 'RepositionFrame')
 end
 E:RegisterModule(B:GetName())

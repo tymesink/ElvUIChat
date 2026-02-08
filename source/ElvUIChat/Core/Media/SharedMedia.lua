@@ -47,8 +47,10 @@ local MediaPath = {
 }
 
 do
-	local t, d = '|T%s%s|t', ''
+	local t = '|T%s%s|t'
+	local d = ''
 	function E:TextureString(texture, data)
+		if not texture then return '' end -- TODO: guard missing texture asset
 		return format(t, texture, data or d)
 	end
 end

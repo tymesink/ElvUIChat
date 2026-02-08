@@ -115,6 +115,8 @@ local toggleWidth = TOGGLE_WIDTH + 1
 function LO:RefreshChatMovers()
 	local LeftChatPanel = _G.LeftChatPanel
 	local LeftChatMover = _G.LeftChatMover
+	-- TODO: movers stripped in chat-only build; decide if we reintroduce a mover stub
+	if not (LeftChatPanel and LeftChatMover) then return end
 	local Left = LeftChatPanel:GetPoint()
 	local showLeftPanel = E.db.datatexts.panels.LeftChatDataPanel.enable
 	
@@ -212,7 +214,7 @@ function LO:CreateChatPanels()
 	lchat:CreateBackdrop('Transparent', nil, nil, nil, nil, nil, nil, true)
 	lchat.backdrop.callbackBackdropColor = CH.Panel_ColorUpdate
 	lchat.FadeObject = {finishedFunc = finishFade, finishedArg1 = lchat, finishedFuncKeep = true}
-	E:CreateMover(lchat, 'LeftChatMover', L["Left Chat"], nil, nil, LO.ResaveChatPosition, nil, nil, 'chat,general', true)
+	-- ElvUIChat: Removed mover - left chat panel doesn't need manual positioning
 
 	--Background Texture
 	local lchattex = lchat:CreateTexture(nil, 'OVERLAY')

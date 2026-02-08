@@ -1,87 +1,208 @@
 local E, L, V, P, G = unpack(ElvUIChat)
+-- Modules we don't have - make them nil-safe
+
 local CH = E:GetModule('Chat')
 local S = E:GetModule('Skins')
 
 local _G = _G
+local next = next
 local unpack = unpack
 local format = format
-local pairs = pairs
-local ipairs = ipairs
+local strsub = strsub
 local tinsert = tinsert
 
-local SetCVar = SetCVar
 local ReloadUI = ReloadUI
 local PlaySound = PlaySound
 local CreateFrame = CreateFrame
 local UIFrameFadeOut = UIFrameFadeOut
 local ChangeChatColor = ChangeChatColor
+local FCF_DockFrame = FCF_DockFrame
 local FCF_SetWindowName = FCF_SetWindowName
 local FCF_StopDragging = FCF_StopDragging
 local FCF_UnDockFrame = FCF_UnDockFrame
 local FCF_OpenNewWindow = FCF_OpenNewWindow
+local FCF_ResetChatWindow = FCF_ResetChatWindow
 local FCF_ResetChatWindows = FCF_ResetChatWindows
 local FCF_SetChatWindowFontSize = FCF_SetChatWindowFontSize
 local FCF_SavePositionAndDimensions = FCF_SavePositionAndDimensions
-local ChatFrame_AddChannel = ChatFrame_AddChannel
-local ChatFrame_RemoveChannel = ChatFrame_RemoveChannel
-local ChatFrame_AddMessageGroup = ChatFrame_AddMessageGroup
-local ChatFrame_RemoveAllMessageGroups = ChatFrame_RemoveAllMessageGroups
-local ToggleChatColorNamesByClassGroup = ToggleChatColorNamesByClassGroup
+local SetChatColorNameByClass = SetChatColorNameByClass
+
 local VoiceTranscriptionFrame_UpdateEditBox = VoiceTranscriptionFrame_UpdateEditBox
 local VoiceTranscriptionFrame_UpdateVisibility = VoiceTranscriptionFrame_UpdateVisibility
 local VoiceTranscriptionFrame_UpdateVoiceTab = VoiceTranscriptionFrame_UpdateVoiceTab
 
 local CLASS, CONTINUE, PREVIOUS = CLASS, CONTINUE, PREVIOUS
-local LOOT, GENERAL, TRADE = LOOT, GENERAL, TRADE
+local VOICE, LOOT, GENERAL, TRADE = VOICE, LOOT, GENERAL, TRADE
 local GUILD_EVENT_LOG = GUILD_EVENT_LOG
+
 -- GLOBALS: ElvUIInstallFrame
 
 local CURRENT_PAGE = 0
-local MAX_PAGE = 3
+local MAX_PAGE = 9
 
 local PLAYER_NAME = format('%s-%s', E.myname, E:ShortenRealm(E.myrealm))
+local ELV_TOONS = {
+	['Elv-Spirestone']			= true,
+	['Elvz-Spirestone']			= true,
+	['Fleshlite-Spirestone']	= true,
+	['Elvidan-Spirestone']		= true,
+	['Elvilas-Spirestone']		= true,
+	['Fraku-Spirestone']		= true,
+	['Jarvix-Spirestone']		= true,
+	['Watermelon-Spirestone']	= true,
+	['Zinxbe-Spirestone']		= true,
+	['Whorlock-Spirestone']		= true,
+}
 
-function E:GetColor(r, g, b, a)
-	return { r = r, b = b, g = g, a = a }
+local function ToggleChatColorNamesByClassGroup(checked, group)
+	local info = _G.ChatTypeGroup[group]
+	if info then
+		for _, value in next, info do
+			SetChatColorNameByClass(strsub(value, 10), checked)
+		end
+	else
+		SetChatColorNameByClass(group, checked)
+	end
+end
+
+function E:SetupChat(noDisplayMsg)
+	local chats = _G.CHAT_FRAMES
+	FCF_ResetChatWindows()
+
+	-- force initialize the tts chat (it doesn't get shown unless you use it)
+	local voiceChat = _G[chats[3]]
+	FCF_ResetChatWindow(voiceChat, VOICE)
+	FCF_DockFrame(voiceChat, 3)
+
+	local rightChat = FCF_OpenNewWindow(LOOT)
+	FCF_UnDockFrame(rightChat)
+
+	for id, name in next, chats do
+		local frame = _G[name]
+
+		if E.private.chat.enable then
+			CH:FCFTab_UpdateColors(CH:GetTab(frame))
+		end
+
+		if id == 1 then
+			frame:ClearAllPoints()
+			frame:Point('BOTTOMLEFT', _G.LeftChatToggleButton, 'TOPLEFT', 1, 3)
+		elseif id == 2 then
+			FCF_SetWindowName(frame, GUILD_EVENT_LOG)
+		elseif id == 3 then
+			VoiceTranscriptionFrame_UpdateVisibility(frame)
+			VoiceTranscriptionFrame_UpdateVoiceTab(frame)
+			VoiceTranscriptionFrame_UpdateEditBox(frame)
+		elseif id == 4 then
+			frame:ClearAllPoints()
+			frame:Point('BOTTOMLEFT', _G.RightChatDataPanel, 'TOPLEFT', 1, 3)
+			FCF_SetWindowName(frame, LOOT..' / '..TRADE)
+		end
+
+		FCF_SetChatWindowFontSize(nil, frame, 12)
+		FCF_SavePositionAndDimensions(frame)
+		FCF_StopDragging(frame)
+	end
+
+	-- keys taken from `ChatTypeGroup` but doesnt add: 'OPENING', 'TRADESKILLS', 'PET_INFO', 'COMBAT_MISC_INFO', 'COMMUNITIES_CHANNEL', 'PET_BATTLE_COMBAT_LOG', 'PET_BATTLE_INFO', 'TARGETICONS'
+	local chatGroup = { 'SYSTEM', 'CHANNEL', 'SAY', 'EMOTE', 'YELL', 'WHISPER', 'PARTY', 'PARTY_LEADER', 'RAID', 'RAID_LEADER', 'RAID_WARNING', 'INSTANCE_CHAT', 'INSTANCE_CHAT_LEADER', 'GUILD', 'OFFICER', 'MONSTER_SAY', 'MONSTER_YELL', 'MONSTER_EMOTE', 'MONSTER_WHISPER', 'MONSTER_BOSS_EMOTE', 'MONSTER_BOSS_WHISPER', 'ERRORS', 'AFK', 'DND', 'IGNORED', 'BG_HORDE', 'BG_ALLIANCE', 'BG_NEUTRAL', 'ACHIEVEMENT', 'GUILD_ACHIEVEMENT', 'BN_WHISPER', 'BN_INLINE_TOAST_ALERT' }
+	local ChatFrame1_RemoveAllMessageGroups = _G.ChatFrame1.RemoveAllMessageGroups or _G.ChatFrame_RemoveAllMessageGroups
+	local ChatFrame1_AddMessageGroup = _G.ChatFrame1.AddMessageGroup or _G.ChatFrame_AddMessageGroup
+
+	ChatFrame1_RemoveAllMessageGroups(_G.ChatFrame1)
+	for _, v in next, chatGroup do
+		ChatFrame1_AddMessageGroup(_G.ChatFrame1, v)
+	end
+
+	-- keys taken from `ChatTypeGroup` which weren't added above to ChatFrame1 but keeping CHANNEL
+	chatGroup = { 'PING', 'CHANNEL', 'COMBAT_XP_GAIN', 'COMBAT_HONOR_GAIN', 'COMBAT_FACTION_CHANGE', 'SKILL', 'LOOT', 'CURRENCY', 'MONEY' }
+	local RightChat_RemoveAllMessageGroups = rightChat.RemoveAllMessageGroups or _G.ChatFrame_RemoveAllMessageGroups
+	local RightChat_AddMessageGroup = rightChat.AddMessageGroup or _G.ChatFrame_AddMessageGroup
+
+	RightChat_RemoveAllMessageGroups(rightChat)
+	for _, v in next, chatGroup do
+		RightChat_AddMessageGroup(rightChat, v)
+	end
+
+	local ChatFrame1_AddChannel = _G.ChatFrame1.AddChannel or _G.ChatFrame_AddChannel
+	local ChatFrame1_RemoveChannel = _G.ChatFrame1.RemoveChannel or _G.ChatFrame_RemoveChannel
+	local RightChat_AddChannel = rightChat.AddChannel or _G.ChatFrame_AddChannel
+
+	ChatFrame1_AddChannel(_G.ChatFrame1, GENERAL)
+	ChatFrame1_RemoveChannel(_G.ChatFrame1, TRADE)
+	RightChat_AddChannel(rightChat, TRADE)
+
+	-- set the chat groups names in class color to enabled for all chat groups which players names appear
+	chatGroup = { 'SAY', 'EMOTE', 'YELL', 'WHISPER', 'PARTY', 'PARTY_LEADER', 'RAID', 'RAID_LEADER', 'RAID_WARNING', 'INSTANCE_CHAT', 'INSTANCE_CHAT_LEADER', 'GUILD', 'OFFICER', 'ACHIEVEMENT', 'GUILD_ACHIEVEMENT', 'COMMUNITIES_CHANNEL' }
+	for i = 1, _G.MAX_WOW_CHAT_CHANNELS do
+		tinsert(chatGroup, 'CHANNEL'..i)
+	end
+	for _, v in next, chatGroup do
+		ToggleChatColorNamesByClassGroup(true, v)
+	end
+
+	-- Adjust Chat Colors
+	ChangeChatColor('CHANNEL1', 0.76, 0.90, 0.91) -- General
+	ChangeChatColor('CHANNEL2', 0.91, 0.62, 0.47) -- Trade
+	ChangeChatColor('CHANNEL3', 0.91, 0.89, 0.47) -- Local Defense
+
+	if E.private.chat.enable then
+		CH:PositionChats()
+	end
+
+	-- TODO: right toggle may not exist without a right panel; remove guard if right side returns
+	if E.db.RightChatPanelFaded and _G.RightChatToggleButton then
+		_G.RightChatToggleButton:Click()
+	end
+
+	if E.db.LeftChatPanelFaded then
+		_G.LeftChatToggleButton:Click()
+	end
+
+	if ELV_TOONS[PLAYER_NAME] then
+		E:SetCVar('scriptErrors', 1)
+	end
+
+	if _G.InstallStepComplete and not noDisplayMsg then
+		_G.InstallStepComplete.message = L["Chat Set"]
+		_G.InstallStepComplete:Show()
+	end
+end
+
+function E:SetupCVars(noDisplayMsg)
+	E:SetCVar('statusTextDisplay', 'BOTH')
+	E:SetCVar('showTutorials', 0)
+	E:SetCVar('fstack_preferParentKeys', 0) -- Add back the frame names via fstack!
+
+
+	if E.private.chat.enable then
+		E:SetCVar('chatMouseScroll', 1)
+		E:SetCVar('chatStyle', 'classic')
+		E:SetCVar('whisperMode', 'inline')
+		E:SetCVar('wholeChatWindowClickable', 0)
+	end
+
+	if _G.InstallStepComplete and not noDisplayMsg then
+		_G.InstallStepComplete.message = L["CVars Set"]
+		_G.InstallStepComplete:Show()
+	end
+end
+
+function E:LayoutNormal()
+	--Chat
+	E.db.chat.fontSize = 10
+	E.db.chat.separateSizes = false
+	E.db.chat.panelHeight = 236
+	E.db.chat.panelWidth = 472
+	E.db.chat.tabFontSize = 12
+	E.db.chat.copyChatLines = true
 end
 
 function E:SetupLayout(layout, noDataReset, noDisplayMsg)
 	if not noDataReset then
+		E.data:ResetProfile(nil, true) -- noChildren, noCallbacks
 		E.db.layoutSet = layout
-		E.db.layoutSetting = layout
-		E.db.convertPages = true
-
-		--Shared base layout, tweaks to individual layouts will be below
-		E:ResetMovers()
-
-		if not E.db.movers then
-			E.db.movers = {}
-		end
-
-		--Chat
-			E.db.chat.fontSize = 10
-			E.db.chat.separateSizes = false
-			E.db.chat.panelHeight = 236
-			E.db.chat.panelWidth = 472
-			E.db.chat.tabFontSize = 12
-			E.db.chat.copyChatLines = true
-		
-		--Movers
-			for mover, position in pairs(E.LayoutMoverPositions.ALL) do
-				E.db.movers[mover] = position
-				E:SaveMoverDefaultPosition(mover)
-			end
-
-			--[[
-				Layout Tweaks will be handled below,
-				These are changes that deviate from the shared base layout.
-			]]
-			if E.LayoutMoverPositions[layout] then
-				for mover, position in pairs(E.LayoutMoverPositions[layout]) do
-					E.db.movers[mover] = position
-					E:SaveMoverDefaultPosition(mover)
-				end
-			end
+		E:LayoutNormal()
 	end
 
 	E:StaggeredUpdateAll()
@@ -91,6 +212,8 @@ function E:SetupLayout(layout, noDataReset, noDisplayMsg)
 		_G.InstallStepComplete:Show()
 	end
 end
+
+
 
 function E:SetupComplete(reload)
 	E.private.install_complete = E.version
@@ -129,16 +252,17 @@ function E:SetupReset()
 	E.InstallFrame:Size(550, 400)
 end
 
-function E:SetPage(PageNum)
-	CURRENT_PAGE = PageNum
+function E:SetPage(num)
+	CURRENT_PAGE = num
+
 	E:SetupReset()
 
-	_G.InstallStatus.anim.progress:SetChange(PageNum)
+	_G.InstallStatus.anim.progress:SetChange(num)
 	_G.InstallStatus.anim.progress:Play()
 	_G.InstallStatus.text:SetText(CURRENT_PAGE..' / '..MAX_PAGE)
 
-	_G.InstallNextButton:SetEnabled(PageNum ~= MAX_PAGE)
-	_G.InstallPrevButton:SetEnabled(PageNum ~= 1)
+	_G.InstallNextButton:SetEnabled(CURRENT_PAGE ~= MAX_PAGE)
+	_G.InstallPrevButton:SetEnabled(num ~= 1)
 
 	local f = E.InstallFrame
 	local InstallOption1Button = _G.InstallOption1Button
@@ -154,12 +278,33 @@ function E:SetPage(PageNum)
 	f.Desc2:FontTemplate(nil, 16)
 	f.Desc3:FontTemplate(nil, 16)
 
-	if PageNum == 1 then
-		f.SubTitle:SetFormattedText(L["Welcome to ElvUIChat version %.2f!"], E.version)
-		f.Desc1:SetText(L["This install process will help you learn some of the features in ElvUIChat has to offer and also prepare your user interface for usage."])
+	if num == 1 then
+		f.SubTitle:SetFormattedText(L["Welcome to ElvUI version %s!"], E.versionString)
+		f.Desc1:SetText(L["This install process will help you learn some of the features in ElvUI has to offer and also prepare your user interface for usage."])
 		f.Desc2:SetText(L["The in-game configuration menu can be accessed by typing the /ec command. Press the button below if you wish to skip the installation process."])
 		f.Desc3:SetText(L["Please press the continue button to go onto the next step."])
-	elseif PageNum == 2 then
+	elseif num == 2 then
+		f.SubTitle:SetText(L["CVars"])
+		f.Desc1:SetText(L["This part of the installation process sets up your World of Warcraft default options it is recommended you should do this step for everything to behave properly."])
+		f.Desc2:SetText(L["Please click the button below to setup your CVars."])
+		f.Desc3:SetText(L["Importance: |cffFF3333High|r"])
+		f.Desc3:FontTemplate(nil, 18)
+
+		InstallOption1Button:Show()
+		InstallOption1Button:SetScript('OnClick', function() E:SetupCVars() end)
+		InstallOption1Button:SetText(L["Setup CVars"])
+	elseif num == 3 then
+		f.SubTitle:SetText(L["Chat"])
+		f.Desc1:SetText(L["This part of the installation process sets up your chat windows names, positions and colors."])
+		f.Desc2:SetText(L["The chat windows function the same as Blizzard standard chat windows, you can right click the tabs and drag them around, rename, etc. Please click the button below to setup your chat windows."])
+		f.Desc3:SetText(L["Importance: |cffD3CF00Medium|r"])
+		f.Desc2:FontTemplate(nil, 14)
+		f.Desc3:FontTemplate(nil, 18)
+
+		InstallOption1Button:Show()
+		InstallOption1Button:SetScript('OnClick', function() E:SetupChat() end)
+		InstallOption1Button:SetText(L["Setup Chat"])
+	elseif num == 4 then
 		f.SubTitle:SetText(L["Profile Settings Setup"])
 		f.Desc1:SetText(L["Please click the button below to setup your Profile Settings."])
 		f.Desc2:SetText(L["New Profile will create a fresh profile for this character."] .. '\n' .. L["Shared Profile will select the default profile."])
@@ -177,13 +322,24 @@ function E:SetPage(PageNum)
 			E.data:SetProfile(E.mynameRealm)
 			E:NextPage()
 		end)
-	elseif PageNum == 3 then
+	elseif num == 5 then
+		
+	elseif num == 6 then
+	
+	elseif num == 7 then
+
+	elseif num == 8 then
+
+	elseif num == 9 then
 		f.SubTitle:SetText(L["Installation Complete"])
-		f.Desc1:SetText(L["You are now finished with the installation process."])
+		f.Desc1:SetText(L["You are now finished with the installation process. If you are in need of technical support please join our Discord."])
 		f.Desc2:SetText(L["Please click the button below so you can setup variables and ReloadUI."])
+
 		InstallOption2Button:Show()
+		
 		InstallOption2Button:SetScript('OnClick', function() E:SetupComplete(true) end)
 		InstallOption2Button:SetText(L["Finished"])
+		E:SetupLayout('foo')
 		E.InstallFrame:Size(550, 350)
 	end
 end
@@ -191,6 +347,7 @@ end
 function E:NextPage()
 	if CURRENT_PAGE ~= MAX_PAGE then
 		CURRENT_PAGE = CURRENT_PAGE + 1
+
 		E:SetPage(CURRENT_PAGE)
 	end
 end
@@ -198,6 +355,7 @@ end
 function E:PreviousPage()
 	if CURRENT_PAGE ~= 1 then
 		CURRENT_PAGE = CURRENT_PAGE - 1
+
 		E:SetPage(CURRENT_PAGE)
 	end
 end
@@ -254,6 +412,7 @@ function E:Install()
 	if not E.InstallFrame then
 		local f = CreateFrame('Button', 'ElvUIInstallFrame', E.UIParent)
 		f.SetPage = E.SetPage
+
 		f:Size(550, 400)
 		f:SetTemplate('Transparent')
 		f:Point('CENTER')
@@ -268,7 +427,7 @@ function E:Install()
 		f.Title = f:CreateFontString(nil, 'OVERLAY')
 		f.Title:FontTemplate(nil, 20)
 		f.Title:Point('TOP', 0, -5)
-		f.Title:SetText(L["ElvUIChat Installation"])
+		f.Title:SetText(L["ElvUI Installation"])
 
 		f.Next = CreateFrame('Button', 'InstallNextButton', f, 'UIPanelButtonTemplate')
 		f.Next:Size(110, 25)
@@ -287,7 +446,7 @@ function E:Install()
 		S:HandleButton(f.Prev, true)
 
 		f.Status = CreateFrame('StatusBar', 'InstallStatus', f)
-		f.Status:SetFrameLevel(f.Status:GetFrameLevel() + 2)
+		f.Status:OffsetFrameLevel(2)
 		f.Status:CreateBackdrop()
 		f.Status:SetStatusBarTexture(E.media.normTex)
 		E:RegisterStatusBar(f.Status)
@@ -300,7 +459,7 @@ function E:Install()
 		f.Status.anim = _G.CreateAnimationGroup(f.Status)
 		f.Status.anim.progress = f.Status.anim:CreateAnimation('Progress')
 		f.Status.anim.progress:SetEasing('Out')
-		f.Status.anim.progress:SetDuration(.3)
+		f.Status.anim.progress:SetDuration(0.3)
 
 		f.Status.text = f.Status:CreateFontString(nil, 'OVERLAY')
 		f.Status.text:FontTemplate(nil, 14, 'OUTLINE')

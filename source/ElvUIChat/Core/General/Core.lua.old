@@ -1,5 +1,5 @@
-local ElvUIChat = select(2, ...)
-ElvUIChat[2] = ElvUIChat[1].Libs.ACL:GetLocale('ElvUIChat', ElvUIChat[1]:GetLocale()) -- Locale doesn't exist yet, make it exist.
+local ElvUI = select(2, ...)
+ElvUI[2] = ElvUI[1].Libs.ACL:GetLocale('ElvUI', ElvUI[1]:GetLocale()) -- Locale doesn't exist yet, make it exist.
 local E, L, V, P, G = unpack(ElvUIChat)
 
 local _G = _G
@@ -37,18 +37,27 @@ local C_ChatInfo_SendAddonMessage = C_ChatInfo.SendAddonMessage
 
 -- GLOBALS: ElvUIChatCharacterDB
 
---Modules (ElvUIChat: Only load modules we have)
+--Modules
+local ActionBars = E:GetModule('ActionBars')
 local AFK = E:GetModule('AFK')
+local Auras = E:GetModule('Auras')
+local Bags = E:GetModule('Bags')
 local Blizzard = E:GetModule('Blizzard')
 local Chat = E:GetModule('Chat')
+local DataBars = E:GetModule('DataBars')
+local DataTexts = E:GetModule('DataTexts')
 local Layout = E:GetModule('Layout')
-local Skins = E:GetModule('Skins')
+local Minimap = E:GetModule('Minimap')
+local NamePlates = E:GetModule('NamePlates')
+local Tooltip = E:GetModule('Tooltip')
+local TotemTracker = E:GetModule('TotemTracker')
+local UnitFrames = E:GetModule('UnitFrames')
 local LSM = E.Libs.LSM
 
 --Constants
 E.noop = function() end
-E.title = format('%s%s|r', E.InfoColor, 'ElvUIChat')
-E.version, E.versionString, E.versionDev, E.versionGit = E:ParseVersionString('ElvUIChat')
+E.title = format('%s%s|r', E.InfoColor, 'ElvUI')
+E.version, E.versionString, E.versionDev, E.versionGit = E:ParseVersionString('ElvUI')
 E.myfaction, E.myLocalizedFaction = UnitFactionGroup('player')
 E.myLocalizedClass, E.myclass, E.myClassID = UnitClass('player')
 E.myLocalizedRace, E.myrace, E.myRaceID = UnitRace('player')
@@ -64,7 +73,7 @@ E.physicalWidth, E.physicalHeight = GetPhysicalScreenSize()
 E.screenWidth, E.screenHeight = GetScreenWidth(), GetScreenHeight()
 E.resolution = format('%dx%d', E.physicalWidth, E.physicalHeight)
 E.perfect = 768 / E.physicalHeight
-E.allowRoles = true -- Retail-only
+E.allowRoles = E.Retail or E.TBC or E.Mists or E.Wrath or E.ClassicAnniv or E.ClassicAnnivHC or E.ClassicSOD
 E.NewSign = [[|TInterface\OptionsFrame\UI-OptionsFrame-NewFeatureIcon:14:14|t]]
 E.NewSignNoWhatsNew = [[|TInterface\OptionsFrame\UI-OptionsFrame-NewFeatureIcon:14:14:0:0|t]]
 E.TexturePath = [[Interface\AddOns\ElvUI\Media\Textures\]] -- for plugins?
@@ -72,34 +81,31 @@ E.ClearTexture = 0 -- used to clear: Set (Normal, Disabled, Checked, Pushed, Hig
 E.Abbreviate = {}
 E.UserList = {}
 
--- ElvUIChat: We don't have oUF, skip these
--- E.oUF.Tags.Vars.E = E
--- E.oUF.Tags.Vars.L = L
+-- oUF Defines
+E.oUF.Tags.Vars.E = E
+E.oUF.Tags.Vars.L = L
 
 --Tables
 E.media = {}
-E.media.bordercolor = {0, 0, 0, 1}  -- ElvUIChat: Initialize early for Toolkit.lua
-E.media.backdropcolor = {0.1, 0.1, 0.1, 1}  -- ElvUIChat: Initialize early for Toolkit.lua
-E.media.backdropfadecolor = {0.06, 0.06, 0.06, 0.8}  -- ElvUIChat: Initialize early for Toolkit.lua
-E.media.unitframeBorderColor = {0, 0, 0, 1}  -- ElvUIChat: Initialize early for Toolkit.lua
-E.media.rgbvaluecolor = {1, 1, 1}  -- ElvUIChat: Initialize early for Skins.lua
-E.media.hexvaluecolor = 'FFFFFFFF'  -- ElvUIChat: Initialize early
-E.media.normTex = E.ClearTexture -- TODO: replace with real texture after LSM fetch
-E.media.glossTex = E.ClearTexture -- TODO: replace with real texture after LSM fetch
 E.frames = {}
 E.unitFrameElements = {}
 E.statusBars = {}
--- ElvUIChat: These tables are now initialized in init.lua (early init before General files load)
--- E.RegisteredModules, E.RegisteredInitialModules, E.valueColorUpdateFuncs, E.TexCoords
 E.texts = {}
 E.snapBars = {}
+E.RegisteredModules = {}
+E.RegisteredInitialModules = {}
+E.valueColorUpdateFuncs = setmetatable({}, {
+	__newindex = function(_, key, value)
+		if type(key) == 'function' then return end
+		rawset(E.valueColorUpdateFuncs, key, value)
+	end
+})
+
+E.TexCoords = {0, 1, 0, 1}
 E.FrameLocks = {}
 E.VehicleLocks = {}
 E.CreditsList = {}
 E.ReverseTimer = {} -- Spells that we want to show the duration backwards (oUF_RaidDebuffs, ???)
-
--- ElvUIChat: Movers completely removed - chat doesn't need manual positioning
-
 E.InversePoints = {
 	BOTTOM = 'TOP',
 	BOTTOMLEFT = 'TOPLEFT',
@@ -175,24 +181,21 @@ E.UIParent:SetPoint('BOTTOM')
 E.UIParent.origHeight = E.UIParent:GetHeight()
 E.snapBars[#E.snapBars + 1] = E.UIParent
 
--- ElvUIChat: We don't have UnitFrames/oUF, so UFParent not needed
--- E.UFParent = _G.ElvUF_UFParentFrameHider -- created in oUF
--- E.UFParent:SetParent(E.UIParent)
--- E.UFParent:SetFrameStrata('LOW')
+E.UFParent = _G.ElvUF_UFParentFrameHider -- created in oUF
+E.UFParent:SetParent(E.UIParent)
+E.UFParent:SetFrameStrata('LOW')
 
 E.HiddenFrame = CreateFrame('Frame', nil, UIParent)
 E.HiddenFrame:SetPoint('BOTTOM')
 E.HiddenFrame:SetSize(1,1)
 E.HiddenFrame:Hide()
 
--- ElvUIChat: We don't have UnitFrames, so skip aurafilters
--- do -- used in options
--- 	E.DEFAULT_FILTER = {}
--- 	for filter, tbl in pairs(G.unitframe.aurafilters) do
--- 		E.DEFAULT_FILTER[filter] = tbl.type
--- 	end
--- end
-E.DEFAULT_FILTER = {}
+do -- used in options
+	E.DEFAULT_FILTER = {}
+	for filter, tbl in pairs(G.unitframe.aurafilters) do
+		E.DEFAULT_FILTER[filter] = tbl.type
+	end
+end
 
 do
 	local a1,a2 = '','[%s%-]'
@@ -220,14 +223,22 @@ function E:GrabColorPickerValues(r, g, b)
 	-- grab old values
 	local oldR, oldG, oldB = _G.ColorPickerFrame:GetColorRGB()
 
-	-- set and define the new values (ElvUIChat: Retail-only, always use Content.ColorPicker)
-	_G.ColorPickerFrame.Content.ColorPicker:SetColorRGB(r or 1, g or 1, b or 1)
+	-- set and define the new values
+	if E.Retail then
+		_G.ColorPickerFrame.Content.ColorPicker:SetColorRGB(r or 1, g or 1, b or 1)
+	else
+		_G.ColorPickerFrame:SetColorRGB(r or 1, g or 1, b or 1)
+	end
 
 	r, g, b = _G.ColorPickerFrame:GetColorRGB()
 
 	-- swap back to the old values
 	if oldR then
-		_G.ColorPickerFrame.Content.ColorPicker:SetColorRGB(oldR, oldG, oldB)
+		if E.Retail then
+			_G.ColorPickerFrame.Content.ColorPicker:SetColorRGB(oldR, oldG, oldB)
+		else
+			_G.ColorPickerFrame:SetColorRGB(oldR, oldG, oldB)
+		end
 	end
 
 	-- free it up..
@@ -321,13 +332,8 @@ function E:UpdateMedia(mediaType)
 	E.media.normTex = LSM:Fetch('statusbar', E.private.general.normTex)
 	E.media.glossTex = LSM:Fetch('statusbar', E.private.general.glossTex)
 
-	local fallbackTex = (E.Media and E.Media.Textures and E.Media.Textures.NormTex) or E.ClearTexture
-	if not E.media.normTex then E.media.normTex = fallbackTex end
-	if not E.media.glossTex then E.media.glossTex = fallbackTex end
-
 	if mediaType then -- callback from SharedMedia: LSM.Register
-		-- TODO: UpdateBlizzardFonts may be missing in chat-only builds; confirm future inclusion
-		if mediaType == 'font' and E.UpdateBlizzardFonts then
+		if mediaType == 'font' then
 			E:UpdateBlizzardFonts()
 		end
 
@@ -336,6 +342,7 @@ function E:UpdateMedia(mediaType)
 
 	-- Colors
 	E.media.bordercolor = E:SetColorTable(E.media.bordercolor, E:UpdateClassColor(E.db.general.bordercolor))
+	E.media.unitframeBorderColor = E:SetColorTable(E.media.unitframeBorderColor, E:UpdateClassColor(E.db.unitframe.colors.borderColor))
 	E.media.backdropcolor = E:SetColorTable(E.media.backdropcolor, E:UpdateClassColor(E.db.general.backdropcolor))
 	E.media.backdropfadecolor = E:SetColorTable(E.media.backdropfadecolor, E:UpdateClassColor(E.db.general.backdropfadecolor))
 
@@ -346,8 +353,7 @@ function E:UpdateMedia(mediaType)
 	E.media.rgbvaluecolor = E:SetColorTable(E.media.rgbvaluecolor, value)
 	E.media.hexvaluecolor = E:RGBToHex(value.r, value.g, value.b)
 
-	-- TODO: cooldown settings can be nil in slimmed chat builds; decide if we should enforce presence
-	if E.db.cooldown and E.db.cooldown.enable then
+	if E.db.cooldown.enable then
 		for key in next, P.cooldown do
 			local db = type(key) == 'table' and E.db.cooldown[key]
 			if db then
@@ -359,6 +365,13 @@ function E:UpdateMedia(mediaType)
 				E:UpdateClassColor(db.colors.swipeLOC)
 			end
 		end
+	end
+
+	if E.private.nameplates.enable then
+		-- Colors for Target Indicator
+		E:UpdateClassColor(E.db.nameplates.colors.glowColor)
+		E:UpdateClassColor(E.db.nameplates.colors.lowHealthColor)
+		E:UpdateClassColor(E.db.nameplates.colors.lowHealthHalf)
 	end
 
 	if E.private.chat.enable then
@@ -379,22 +392,46 @@ function E:UpdateMedia(mediaType)
 	end
 
 	E:ValueFuncCall()
-	-- TODO: UpdateBlizzardFonts optional in this subset; revisit guard once font pipeline is finalized
-	if E.UpdateBlizzardFonts then
-		E:UpdateBlizzardFonts()
-	end
+	E:UpdateBlizzardFonts()
 end
 
 function E:GeneralMedia_ApplyToAll()
 	local font = E.db.general.font
 	local fontSize = E.db.general.fontSize
 
-
-	-- Only chat module exists
+	E.db.bags.itemLevelFont = font
+	E.db.bags.itemLevelFontSize = fontSize
+	E.db.bags.countFont = font
+	E.db.bags.countFontSize = fontSize
+	E.db.nameplates.font = font
+	E.db.actionbar.font = font
+	E.db.auras.buffs.countFont = font
+	E.db.auras.buffs.countFontSize = fontSize
+	E.db.auras.buffs.timeFont = font
+	E.db.auras.buffs.timeFontSize = fontSize
+	E.db.auras.debuffs.countFont = font
+	E.db.auras.debuffs.countFontSize = fontSize
+	E.db.auras.debuffs.timeFont = font
+	E.db.auras.debuffs.timeFontSize = fontSize
 	E.db.chat.font = font
 	E.db.chat.fontSize = fontSize
 	E.db.chat.tabFont = font
 	E.db.chat.tabFontSize = fontSize
+	E.db.datatexts.font = font
+	E.db.datatexts.fontSize = fontSize
+	E.db.general.minimap.locationFont = font
+	E.db.tooltip.font = font
+	E.db.tooltip.fontSize = fontSize
+	E.db.tooltip.headerFont = font
+	E.db.tooltip.headerFontSize = fontSize
+	E.db.tooltip.textFontSize = fontSize
+	E.db.tooltip.smallTextFontSize = fontSize
+	E.db.tooltip.healthBar.font = font
+	E.db.unitframe.font = font
+	E.db.unitframe.units.party.rdebuffs.font = font
+	E.db.unitframe.units.raid1.rdebuffs.font = font
+	E.db.unitframe.units.raid2.rdebuffs.font = font
+	E.db.unitframe.units.raid3.rdebuffs.font = font
 
 	E:StaggeredUpdateAll()
 end
@@ -554,8 +591,29 @@ function E:IsIncompatible(module, addons)
 end
 
 do
-	-- ElvUIChat: Only check for Chat module conflicts
 	local ADDONS = {
+		ActionBar = {
+			info = {
+				enabled = function() return E.private.actionbar.enable end,
+				accept = function() E.private.actionbar.enable = false; ReloadUI() end,
+				name = 'ElvUI ActionBars'
+			},
+			'Bartender4',
+			'Dominos'
+		},
+		Bags = {
+			info = {
+				enabled = function() return E.private.bags.enable end,
+				accept = function() E.private.bags.enable = false; ReloadUI() end,
+				name = 'ElvUI Bags'
+			},
+			'AdiBags',
+			'ArkInventory',
+			'Baganator',
+			'Bagnon',
+			'BetterBags',
+			'Sorted'
+		},
 		Chat = {
 			info = {
 				enabled = function() return E.private.chat.enable end,
@@ -566,7 +624,30 @@ do
 			'Chatter',
 			'Chattynator',
 			'Glass'
-		}
+		},
+		NamePlates = {
+			info = {
+				enabled = function() return E.private.nameplates.enable end,
+				accept = function() E.private.nameplates.enable = false; ReloadUI() end,
+				name = 'ElvUI NamePlates'
+			},
+			'TidyPlates',
+			'TidyPlates_ThreatPlates',
+			'Healers-Have-To-Die',
+			'Kui_Nameplates',
+			'Plater',
+			'Aloft',
+			'Platynator'
+		},
+		Minimap = {
+			info = {
+				enabled = function() return E.private.general.minimap.enable end,
+				accept = function() E.private.general.minimap.enable = false; ReloadUI() end,
+				name = 'ElvUI Minimap',
+			},
+			'Leatrix_Plus', -- has custom check in IsIncompatible
+			'SexyMap'
+		},
 	}
 
 	E.INCOMPATIBLE_ADDONS = ADDONS -- let addons have the ability to alter this list to trigger our popup if they want
@@ -641,13 +722,8 @@ function E:RemoveTableDuplicates(cleanTable, checkTable, generatedKeys)
 	local rtdCleaned = {}
 	local keyed = type(generatedKeys) == 'table'
 	for option, value in pairs(cleanTable) do
-		local default = checkTable[option]
-		local genTable, genOption
-		if keyed then
-			genTable = generatedKeys[option]
-		else
-			genOption = generatedKeys
-		end
+		local default, genTable, genOption = checkTable[option]
+		if keyed then genTable = generatedKeys[option] else genOption = generatedKeys end
 
 		-- we only want to add settings which are existing in the default table, unless it's allowed by generatedKeys
 		if default ~= nil or (genTable or genOption ~= nil) then
@@ -946,6 +1022,7 @@ function E:UpdateStart(skipCallback, skipUpdateDB)
 
 	E:UpdateMoverPositions()
 	E:UpdateMediaItems()
+	E:UpdateUnitFrames()
 
 	if not skipCallback then
 		E.callbacks:Fire('StaggeredUpdate')
@@ -971,24 +1048,467 @@ do -- BFA Convert, deprecated..
 
 	local ttModSwap
 	do -- tooltip convert
-		local swap = {ALL = 'HIDE', NONE = 'SHOW'}
+		local swap = {ALL = 'HIDE',NONE = 'SHOW'}
 		ttModSwap = function(val) return swap[val] end
 	end
 
+	function E:DBConvertBFA()
+		--Fix issue where UIScale was incorrectly stored as string
+		E.global.general.UIScale = tonumber(E.global.general.UIScale)
+
+		--Not sure how this one happens, but prevent it in any case
+		if E.global.general.UIScale <= 0 then
+			E.global.general.UIScale = G.general.UIScale
+		end
+
+		--Combat & Resting Icon options update
+		if E.db.unitframe.units.player.combatIcon ~= nil then
+			E.db.unitframe.units.player.CombatIcon.enable = E.db.unitframe.units.player.combatIcon
+			E.db.unitframe.units.player.combatIcon = nil
+		end
+		if E.db.unitframe.units.player.restIcon ~= nil then
+			E.db.unitframe.units.player.RestIcon.enable = E.db.unitframe.units.player.restIcon
+			E.db.unitframe.units.player.restIcon = nil
+		end
+
+		-- [Fader] Combat Fade options for Player
+		if E.db.unitframe.units.player.combatfade ~= nil then
+			local enabled = E.db.unitframe.units.player.combatfade
+			E.db.unitframe.units.player.fader.enable = enabled
+
+			if enabled then -- use the old min alpha too
+				E.db.unitframe.units.player.fader.minAlpha = 0
+			end
+
+			E.db.unitframe.units.player.combatfade = nil
+		end
+
+		-- [Fader] Range check options for Units
+		do
+			local outsideAlpha
+			if E.db.unitframe.OORAlpha ~= nil then
+				outsideAlpha = E.db.unitframe.OORAlpha
+				E.db.unitframe.OORAlpha = nil
+			end
+
+			for _, unit in ipairs({'target','targettarget','targettargettarget','focus','focustarget','pet','pettarget','boss','arena','party','raid1','raid2','raid3','raidpet','tank','assist'}) do
+				if E.db.unitframe.units[unit].rangeCheck ~= nil then
+					local enabled = E.db.unitframe.units[unit].rangeCheck
+					E.db.unitframe.units[unit].fader.enable = enabled
+					E.db.unitframe.units[unit].fader.range = enabled
+
+					if outsideAlpha then
+						E.db.unitframe.units[unit].fader.minAlpha = outsideAlpha
+					end
+
+					E.db.unitframe.units[unit].rangeCheck = nil
+				end
+			end
+		end
+
+		if E.db.nameplates.lowHealthThreshold > 0.8 then
+			E.db.nameplates.lowHealthThreshold = 0.8
+		end
+
+		--Removed additional table in nameplate filters cause it was basically useless
+		for _, unit in ipairs({'PLAYER','FRIENDLY_PLAYER','ENEMY_PLAYER','FRIENDLY_NPC','ENEMY_NPC'}) do
+			if E.db.nameplates.units[unit].buffs and E.db.nameplates.units[unit].buffs.filters ~= nil then
+				E.db.nameplates.units[unit].buffs.minDuration = E.db.nameplates.units[unit].buffs.filters.minDuration or P.nameplates.units[unit].buffs.minDuration
+				E.db.nameplates.units[unit].buffs.maxDuration = E.db.nameplates.units[unit].buffs.filters.maxDuration or P.nameplates.units[unit].buffs.maxDuration
+				E.db.nameplates.units[unit].buffs.priority = E.db.nameplates.units[unit].buffs.filters.priority or P.nameplates.units[unit].buffs.priority
+				E.db.nameplates.units[unit].buffs.filters = nil
+			end
+			if E.db.nameplates.units[unit].debuffs and E.db.nameplates.units[unit].debuffs.filters ~= nil then
+				E.db.nameplates.units[unit].debuffs.minDuration = E.db.nameplates.units[unit].debuffs.filters.minDuration or P.nameplates.units[unit].debuffs.minDuration
+				E.db.nameplates.units[unit].debuffs.maxDuration = E.db.nameplates.units[unit].debuffs.filters.maxDuration or P.nameplates.units[unit].debuffs.maxDuration
+				E.db.nameplates.units[unit].debuffs.priority = E.db.nameplates.units[unit].debuffs.filters.priority or P.nameplates.units[unit].debuffs.priority
+				E.db.nameplates.units[unit].debuffs.filters = nil
+			end
+		end
+
+		--Convert cropIcon to tristate
+		local cropIcon = E.db.general.cropIcon
+		if type(cropIcon) == 'boolean' then
+			E.db.general.cropIcon = (cropIcon and 2) or 0
+		end
+
+		--Vendor Greys option is now in bags table
+		if E.db.general.vendorGrays ~= nil then
+			E.db.bags.vendorGrays.enable = E.db.general.vendorGrays
+			E.db.general.vendorGraysDetails = nil
+			E.db.general.vendorGrays = nil
+		end
+
+		--Heal Prediction is now a table instead of a bool
+		for _, unit in ipairs({'player','target','focus','pet','arena','party','raid1','raid2','raid3','raidpet'}) do
+			if type(E.db.unitframe.units[unit].healPrediction) ~= 'table' then
+				local enabled = E.db.unitframe.units[unit].healPrediction
+				E.db.unitframe.units[unit].healPrediction = {}
+				E.db.unitframe.units[unit].healPrediction.enable = enabled
+			else
+				local healPrediction = E.db.unitframe.units[unit].healPrediction
+				if healPrediction.reversedAbsorbs ~= nil then -- convert the newer setting if it existed
+					healPrediction.reversedAbsorbs = nil
+					healPrediction.absorbStyle = 'REVERSED'
+
+					-- clear extras
+					healPrediction.showAbsorbAmount = nil
+					healPrediction.showOverAbsorbs = nil
+				elseif healPrediction.showAbsorbAmount ~= nil then -- convert the old setting into the new wrapped setting
+					healPrediction.showAbsorbAmount = nil
+					healPrediction.absorbStyle = 'WRAPPED'
+
+					-- clear extras
+					healPrediction.showOverAbsorbs = nil
+				elseif healPrediction.showOverAbsorbs ~= nil then -- convert the over absorb toggle into the new setting
+					healPrediction.absorbStyle = 'NORMAL'
+					healPrediction.showOverAbsorbs = nil
+				end
+			end
+		end
+
+		--Tooltip FactionColors Setting
+		for i = 1, 8 do
+			local oldTable = E.db.tooltip.factionColors[''..i]
+			if oldTable then
+				local newTable = E:CopyTable({}, P.tooltip.factionColors[i]) -- import full table
+				E.db.tooltip.factionColors[i] = E:CopyTable(newTable, oldTable)
+				E.db.tooltip.factionColors[''..i] = nil
+			end
+		end
+
+		-- Wipe some old variables off profiles
+		if E.global.uiScaleInformed then E.global.uiScaleInformed = nil end
+		if E.global.nameplatesResetInformed then E.global.nameplatesResetInformed = nil end
+		if E.global.userInformedNewChanges1 then E.global.userInformedNewChanges1 = nil end
+
+		-- cvar nameplate visibility stuff
+		if E.db.nameplates.visibility.nameplateShowAll ~= nil then
+			E.db.nameplates.visibility.showAll = E.db.nameplates.visibility.nameplateShowAll
+			E.db.nameplates.visibility.nameplateShowAll = nil
+		end
+		if E.db.nameplates.units.FRIENDLY_NPC.showAlways ~= nil then
+			E.db.nameplates.visibility.friendly.npcs = E.db.nameplates.units.FRIENDLY_NPC.showAlways
+			E.db.nameplates.units.FRIENDLY_NPC.showAlways = nil
+		end
+		if E.db.nameplates.units.FRIENDLY_PLAYER.minions ~= nil then
+			E.db.nameplates.visibility.friendly.minions = E.db.nameplates.units.FRIENDLY_PLAYER.minions
+			E.db.nameplates.units.FRIENDLY_PLAYER.minions = nil
+		end
+		if E.db.nameplates.units.ENEMY_NPC.minors ~= nil then
+			E.db.nameplates.visibility.enemy.minus = E.db.nameplates.units.ENEMY_NPC.minors
+			E.db.nameplates.units.ENEMY_NPC.minors = nil
+		end
+		if E.db.nameplates.units.ENEMY_PLAYER.minions ~= nil or E.db.nameplates.units.ENEMY_NPC.minions ~= nil then
+			E.db.nameplates.visibility.enemy.minions = E.db.nameplates.units.ENEMY_PLAYER.minions or E.db.nameplates.units.ENEMY_NPC.minions
+			E.db.nameplates.units.ENEMY_PLAYER.minions = nil
+			E.db.nameplates.units.ENEMY_NPC.minions = nil
+		end
+
+		-- removed override stuff from aurawatch
+		if E.global.unitframe.buffwatch then
+			for _, spells in pairs(E.global.unitframe.buffwatch) do
+				for _, spell in pairs(spells) do
+					ConvertAurawatch(spell)
+				end
+			end
+		end
+
+		if E.db.unitframe.filters.buffwatch then
+			for _, spell in pairs(E.db.unitframe.filters.buffwatch) do
+				ConvertAurawatch(spell)
+			end
+		end
+
+		-- fix aurabars colors
+		local auraBarColors = E.global.unitframe.AuraBarColors
+		for spell, info in pairs(auraBarColors) do
+			if type(spell) == 'string' then
+				local _, _, _, _, _, _, spellID = E:GetSpellInfo(spell)
+				if spellID and not auraBarColors[spellID] then
+					auraBarColors[spellID] = info
+					auraBarColors[spell] = nil
+					spell = spellID
+				end
+			end
+
+			if type(info) == 'boolean' then
+				auraBarColors[spell] = { color = { r = 1, g = 1, b = 1, a = 1 }, enable = info }
+			elseif type(info) == 'table' then
+				if info.r or info.g or info.b then
+					auraBarColors[spell] = { color = { r = info.r or 1, g = info.g or 1, b = info.b or 1 }, enable = true }
+				elseif info.color then -- azil created a void hole, delete it -x-
+					if info.color.color then info.color.color = nil end
+					if info.color.enable then info.color.enable = nil end
+					if info.color.a then info.color.a = nil end -- alpha isnt supported by this
+				end
+			end
+		end
+
+		if E.db.unitframe.colors.debuffHighlight.blendMode == 'MOD' then
+			E.db.unitframe.colors.debuffHighlight.blendMode = P.unitframe.colors.debuffHighlight.blendMode
+		end
+
+		do -- tooltip modifier code was dumb, change it but keep the past setting
+			local swap = ttModSwap(E.db.tooltip.modifierID)
+			if swap then E.db.tooltip.modifierID = swap end
+
+			swap = ttModSwap(E.db.tooltip.visibility.bags)
+			if swap then E.db.tooltip.visibility.bags = swap end
+
+			swap = ttModSwap(E.db.tooltip.visibility.unitFrames)
+			if swap then E.db.tooltip.visibility.unitFrames = swap end
+
+			swap = ttModSwap(E.db.tooltip.visibility.actionbars)
+			if swap then E.db.tooltip.visibility.actionbars = swap end
+
+			swap = ttModSwap(E.db.tooltip.visibility.combatOverride)
+			if swap then E.db.tooltip.visibility.combatOverride = swap end
+
+			-- remove the old combat variable and just use the mod since it supports show/hide states
+			local hideInCombat = E.db.tooltip.visibility.combat
+			if hideInCombat ~= nil then
+				E.db.tooltip.visibility.combat = nil
+
+				local override = E.db.tooltip.visibility.combatOverride
+				if hideInCombat and (override ~= 'SHIFT' and override ~= 'CTRL' and override ~= 'ALT') then -- wouldve been NONE but now it would be HIDE
+					E.db.tooltip.visibility.combatOverride = 'HIDE'
+				end
+			end
+		end
+	end
 end
 
--- ElvUIChat: Simplified SetupDB for chat-only modules
-function E:SetupDB()
-	-- Chat module uses E.db.chat
-	if E.Chat then
-		E.Chat.db = E.db.chat
+function E:DBConvertSL()
+	if E.private.skins.cleanBossButton ~= nil then
+		E.db.actionbar.extraActionButton.clean = E.private.skins.cleanBossButton
+		E.private.skins.cleanBossButton = nil
 	end
-	
-	-- Skins module uses E.private.skins (not E.db)
-	if E.Skins then
-		E.Skins.db = E.private.skins
+
+	if E.global.nameplate then
+		E:CopyTable(E.global.nameplates, E.global.nameplate)
+		E.global.nameplate = nil
 	end
-	
+
+	if E.global.unitframe.DebuffHighlightColors then
+		E:CopyTable(E.global.unitframe.AuraHighlightColors, E.global.unitframe.DebuffHighlightColors)
+		E.global.unitframe.DebuffHighlightColors = nil
+	end
+
+	if E.db.unitframe.filters.buffwatch then
+		E.db.unitframe.filters.aurawatch = E:CopyTable({}, E.db.unitframe.filters.buffwatch)
+		E.db.unitframe.filters.buffwatch = nil
+	end
+
+	if E.global.unitframe.buffwatch then
+		E:CopyTable(E.global.unitframe.aurawatch, E.global.unitframe.buffwatch)
+		E.global.unitframe.buffwatch = nil
+	end
+
+	-- ActionBar 12.18 changes
+	for i = 1, 10 do
+		local bar = E.db.actionbar['bar'..i]
+		if bar.buttonsize then
+			bar.buttonSize = bar.buttonsize
+			bar.buttonsize = nil
+		end
+		if bar.buttonspacing then
+			bar.buttonSpacing = bar.buttonspacing
+			bar.buttonspacing = nil
+		end
+	end
+	if E.db.actionbar.barPet.buttonsize then
+		E.db.actionbar.barPet.buttonSize = E.db.actionbar.barPet.buttonsize
+		E.db.actionbar.barPet.buttonsize = nil
+	end
+	if E.db.actionbar.stanceBar.buttonsize then
+		E.db.actionbar.stanceBar.buttonSize = E.db.actionbar.stanceBar.buttonsize
+		E.db.actionbar.stanceBar.buttonsize = nil
+	end
+	if E.db.actionbar.barPet.buttonspacing then
+		E.db.actionbar.barPet.buttonSpacing = E.db.actionbar.barPet.buttonspacing
+		E.db.actionbar.barPet.buttonspacing = nil
+	end
+	if E.db.actionbar.stanceBar.buttonspacing then
+		E.db.actionbar.stanceBar.buttonSpacing = E.db.actionbar.stanceBar.buttonspacing
+		E.db.actionbar.stanceBar.buttonspacing = nil
+	end
+
+	-- Convert Pages
+	if E.db.actionbar.convertPages then
+		E.db.convertPages = E.db.actionbar.convertPages
+		E.db.actionbar.convertPages = nil
+	end
+
+	if not E.db.convertPages then
+		local bar2, bar3, bar5, bar6 = E.db.actionbar.bar2, E.db.actionbar.bar3, E.db.actionbar.bar5, E.db.actionbar.bar6
+		E.db.actionbar.bar2, E.db.actionbar.bar3, E.db.actionbar.bar5, E.db.actionbar.bar6 = E:CopyTable({}, bar6), E:CopyTable({}, bar5), E:CopyTable({}, bar2), E:CopyTable({}, bar3)
+
+		if E.db.movers then
+			local bar2mover, bar3mover, bar5mover, bar6mover = E.db.movers.ElvAB_2, E.db.movers.ElvAB_3, E.db.movers.ElvAB_5, E.db.movers.ElvAB_6
+			if bar6mover == 'BOTTOM,ElvUI_Bar2,TOP,0,2' then bar6mover = ActionBars.barDefaults.bar2.position end
+			E.db.movers.ElvAB_2, E.db.movers.ElvAB_3, E.db.movers.ElvAB_5, E.db.movers.ElvAB_6 = bar6mover, bar5mover, bar2mover, bar3mover
+		end
+
+		E.db.convertPages = true
+	end
+
+	-- UnitFrame
+	if E.db.unitframe.units.party.groupBy == 'ROLE2' or E.db.unitframe.units.party.groupBy == 'CLASSROLE' then
+		E.db.unitframe.units.party.groupBy = 'ROLE'
+	end
+	if E.db.unitframe.units.raid and (E.db.unitframe.units.raid.groupBy == 'ROLE2' or E.db.unitframe.units.raid.groupBy == 'CLASSROLE') then
+		E.db.unitframe.units.raid.groupBy = 'ROLE'
+	end
+	if E.db.unitframe.units.raid40 and (E.db.unitframe.units.raid40.groupBy == 'ROLE2' or E.db.unitframe.units.raid40.groupBy == 'CLASSROLE') then
+		E.db.unitframe.units.raid40.groupBy = 'ROLE'
+	end
+	if E.db.unitframe.units.raidpet.groupBy == 'ROLE2' or E.db.unitframe.units.raidpet.groupBy == 'CLASSROLE' then
+		E.db.unitframe.units.raidpet.groupBy = 'ROLE'
+	end
+
+	for name, infoTable in pairs(G.unitframe.aurafilters) do -- cause people change things they aren't supposed to.
+		if E.global.unitframe.aurafilters[name] and E.global.unitframe.aurafilters[name].type ~= infoTable.type then
+			E.global.unitframe.aurafilters[name].type = infoTable.type
+		end
+	end
+
+	-- rune convert
+	for _, data in ipairs({E.db.unitframe.colors.classResources.DEATHKNIGHT, E.db.nameplates.colors.classResources.DEATHKNIGHT}) do
+		if data.r or data.g or data.b then
+			data[0].r, data[0].g, data[0].b = data.r, data.g, data.b
+			data.r, data.g, data.b = nil, nil, nil
+		end
+	end
+
+	-- raid 1-3 converts
+	E.db.unitframe.smartRaidFilter = nil
+
+	if E.db.unitframe.units.raid then
+		E.db.unitframe.units.raid.visibility = nil
+		E.db.unitframe.units.raid.enable = nil
+		E:CopyTable(E.db.unitframe.units.raid1, E.db.unitframe.units.raid)
+		E.db.unitframe.units.raid = nil
+	end
+
+	if E.db.unitframe.units.raid40 then
+		E.db.unitframe.units.raid40.visibility = nil
+		E.db.unitframe.units.raid40.enable = nil
+		E:CopyTable(E.db.unitframe.units.raid3, E.db.unitframe.units.raid40)
+		E.db.unitframe.units.raid40 = nil
+	end
+
+	if E.db.movers and E.db.movers.ElvUF_RaidMover then
+		E.db.movers.ElvUF_Raid1Mover = E.db.movers.ElvUF_RaidMover
+		E.db.movers.ElvUF_RaidMover = nil
+	end
+	if E.db.movers and E.db.movers.ElvUF_Raid40Mover then
+		E.db.movers.ElvUF_Raid3Mover = E.db.movers.ElvUF_Raid40Mover
+		E.db.movers.ElvUF_Raid40Mover = nil
+	end
+
+	-- new multiple ranks aura indicator
+	local auraConvert = E.global.unitframe.aurawatch[E.myclass]
+	if auraConvert then
+		for auraID in next, auraConvert do
+			if E.Filters.Included[auraID] then
+				auraConvert[auraID] = nil
+			end
+		end
+	end
+end
+
+function E:DBConvertDF()
+	local currency = E.global.datatexts.customCurrencies
+	if currency then
+		for id, data in next, E.global.datatexts.customCurrencies do
+			local info = {
+				name = data.NAME or nil,
+				showMax = data.SHOW_MAX or nil,
+				currencyTooltip = data.DISPLAY_IN_MAIN_TOOLTIP or nil,
+				nameStyle = data.DISPLAY_STYLE and (strfind(data.DISPLAY_STYLE, 'ABBR') and 'abbr' or strfind(data.DISPLAY_STYLE, 'TEXT') and 'full' or 'none') or nil
+			}
+
+			if next(info) then
+				E.global.datatexts.customCurrencies[id] = info
+			end
+		end
+	end
+
+	if E.private.general.gameMenuScale ~= nil then
+		E.db.general.gameMenuScale = E.private.general.gameMenuScale
+		E.private.general.gameMenuScale = nil
+	end
+end
+
+function E:DBConvertTWW()
+	-- tooltip item count to be more optional
+	local itemCount = E.db.tooltip.itemCount
+	if type(itemCount) == 'string' then
+		local db = E:CopyTable({}, P.tooltip.itemCount)
+		if itemCount == 'BAGS_ONLY' then
+			db.bags = true
+			db.bank = false
+		elseif itemCount == 'BANK_ONLY' then
+			db.bags = false
+			db.bank = true
+		elseif itemCount == 'BOTH' then
+			db.bags = true
+			db.bank = true
+		elseif itemCount == 'NONE' then
+			db.bags = false
+			db.bank = false
+		end
+
+		E.db.tooltip.itemCount = db
+	end
+
+	local healthBreak = E.db.unitframe.colors.healthBreak
+	local onlyLow = healthBreak.onlyLow
+	if onlyLow ~= nil then
+		healthBreak.onlyLow = nil
+
+		if onlyLow then
+			healthBreak.threshold.bad = true
+			healthBreak.threshold.neutral = false
+			healthBreak.threshold.good = false
+		end
+	end
+
+	-- soulshard convert
+	for _, data in ipairs({ E.db.unitframe.colors.classResources.WARLOCK, E.db.nameplates.colors.classResources.WARLOCK }) do
+		if data.r or data.g or data.b then
+			data.SOUL_SHARDS.r, data.SOUL_SHARDS.g, data.SOUL_SHARDS.b = data.r, data.g, data.b
+			data.r, data.g, data.b = nil, nil, nil
+		end
+	end
+end
+
+function E:DBConvertDev()
+	if not ElvUIChatCharacterDB.ConvertKeybindings then
+		E:ConvertActionBarKeybinds()
+		ElvUIChatCharacterDB.ConvertKeybindings = true
+	end
+
+	-- mage resource convert
+	for _, data in ipairs({ E.db.unitframe.colors.classResources.MAGE, E.db.nameplates.colors.classResources.MAGE }) do
+		if data.r or data.g or data.b then
+			data.ARCANE_CHARGES.r, data.ARCANE_CHARGES.g, data.ARCANE_CHARGES.b = data.r, data.g, data.b
+			data.r, data.g, data.b = nil, nil, nil
+		end
+	end
+
+	-- hide text -> hide name & hide time
+	for _, unit in ipairs({'player','target','focus','pet','boss','arena','party'}) do
+		local db = E.db.unitframe.units[unit].castbar
+		local previous = db.hidetext
+		if previous ~= nil then
+			db.hideName = previous
+			db.hideTime = previous
+
+			db.hidetext = nil
+		end
+	end
 end
 
 function E:UpdateDB()
@@ -996,23 +1516,39 @@ function E:UpdateDB()
 	E.global = E.data.global
 	E.db = E.data.profile
 
+	E:DBConversions()
 	E:SetupDB()
 
-	-- ElvUIChat: Removed unitframe border color defaults - we don't have UnitFrames module
+	-- default the non thing pixel border color to 191919, otherwise its 000000
+	if not E.PixelMode then P.general.bordercolor = { r = 0.1, g = 0.1, b = 0.1, a = 1 } end
+	if not E.db.unitframe.thinBorders then P.unitframe.colors.borderColor = { r = 0.1, g = 0.1, b = 0.1, a = 1 } end
 end
 
 function E:UpdateMoverPositions()
-	-- ElvUIChat: Stub - movers removed, chat doesn't need manual positioning
+	--The mover is positioned before it is resized, which causes issues for unitframes
+	--Allow movers to be 'pushed' outside the screen, when they are resized they should be back in the screen area.
+	--We set movers to be clamped again at the bottom of this function.
+	E:SetMoversClampedToScreen(false)
+	E:SetMoversPositions()
+
+	--Not part of staggered update
 end
 
+function E:UpdateUnitFrames()
+	if E.private.unitframe.enable then
+		UnitFrames:Update_AllFrames()
+	end
 
+	--Not part of staggered update
+end
 
 function E:UpdateMediaItems(skipCallback)
 	E:UpdateMedia()
-	if E.UpdateCustomClassColors then
-		E:UpdateCustomClassColors()
-	end
+	E:UpdateAuraCurves()
+	E:UpdateDispelColors()
+	E:UpdateCustomClassColors()
 	E:UpdateFrameTemplates()
+	E:UpdateStatusBars()
 
 	if not skipCallback then
 		E.callbacks:Fire('StaggeredUpdate')
@@ -1021,16 +1557,102 @@ end
 
 function E:UpdateLayout(skipCallback)
 	Layout:ToggleChatPanels()
-	
+	Layout:UpdateBottomPanel()
+	Layout:UpdateTopPanel()
+	Layout:SetDataPanelStyle()
+
 	if not skipCallback then
 		E.callbacks:Fire('StaggeredUpdate')
 	end
 end
 
+function E:UpdateActionBars(skipCallback)
+	ActionBars:ToggleCooldownOptions()
+	ActionBars:UpdateButtonSettings()
+	ActionBars:UpdateMicroButtons()
+
+	if E.Retail or E.Mists then
+		ActionBars:UpdateExtraButtons()
+	end
+
+	if not skipCallback then
+		E.callbacks:Fire('StaggeredUpdate')
+	end
+end
+
+function E:UpdateNamePlates(skipCallback)
+	NamePlates:ConfigureAll()
+
+	if not skipCallback then
+		E.callbacks:Fire('StaggeredUpdate')
+	end
+end
+
+function E:UpdateTooltip()
+	Tooltip:SetTooltipFonts()
+end
+
+function E:UpdateBags(skipCallback)
+	Bags:SizeAndPositionBagBar()
+	Bags:UpdateItemDisplay()
+	Bags:UpdateLayouts()
+
+	if not skipCallback then
+		E.callbacks:Fire('StaggeredUpdate')
+	end
+end
 
 function E:UpdateChat(skipCallback)
 	Chat:SetupChat()
 	Chat:UpdateEditboxAnchors()
+
+	if not skipCallback then
+		E.callbacks:Fire('StaggeredUpdate')
+	end
+end
+
+function E:UpdateDataBars(skipCallback)
+	DataBars:ToggleAll()
+	DataBars:UpdateAll()
+
+	if not skipCallback then
+		E.callbacks:Fire('StaggeredUpdate')
+	end
+end
+
+function E:UpdateDataTexts(skipCallback)
+	DataTexts:LoadDataTexts()
+
+	if not skipCallback then
+		E.callbacks:Fire('StaggeredUpdate')
+	end
+end
+
+function E:UpdateMinimap(skipCallback)
+	Minimap:UpdateSettings()
+
+	if not skipCallback then
+		E.callbacks:Fire('StaggeredUpdate')
+	end
+end
+
+function E:UpdateAuras(skipCallback)
+	if Auras.BuffFrame then Auras:UpdateHeader(Auras.BuffFrame) end
+	if Auras.DebuffFrame then Auras:UpdateHeader(Auras.DebuffFrame) end
+
+	if not skipCallback then
+		E.callbacks:Fire('StaggeredUpdate')
+	end
+end
+
+function E:UpdateMisc(skipCallback)
+	AFK:Toggle()
+
+	if E.Retail then
+		TotemTracker:PositionAndSize()
+	elseif E.Wrath then
+		ActionBars:PositionAndSizeTotemBar()
+	end
 
 	if not skipCallback then
 		E.callbacks:Fire('StaggeredUpdate')
@@ -1042,15 +1664,14 @@ function E:UpdateEnd()
 		E:RefreshGUI()
 	end
 
-	-- ElvUIChat: Removed mover clamping - movers not needed for chat-only addon
+	E:SetMoversClampedToScreen(true) -- Go back to using clamp after resizing has taken place.
 
 	if E.staggerUpdateRunning then
 		--We're doing a staggered update, but plugins expect the old UpdateAll to be called
 		--So call it, but skip updates inside it
 		E:UpdateAll(false)
 	elseif not E.private.install_complete then
-		-- ElvUIChat: Simple install - just mark as complete, chat works with defaults
-		E.private.install_complete = E.version
+		E:Install()
 	end
 
 	--Done updating, let code now
@@ -1061,8 +1682,7 @@ do
 	local staggerDelay = 0.02
 	local staggerTable = {}
 	local function CallStaggeredUpdate()
-		local nextUpdate = staggerTable[1]
-		local nextDelay
+		local nextUpdate, nextDelay = staggerTable[1]
 		if nextUpdate then
 			tremove(staggerTable, 1)
 
@@ -1082,9 +1702,33 @@ do
 		end
 
 		if (not event or event == 'OnProfileChanged' or event == 'OnProfileCopied') and not E.staggerUpdateRunning then
-
+			tinsert(staggerTable, 'UpdateLayout')
+			if ActionBars.Initialized then
+				tinsert(staggerTable, 'UpdateActionBars')
+			end
+			if NamePlates.Initialized then
+				tinsert(staggerTable, 'UpdateNamePlates')
+			end
+			if Bags.Initialized then
+				tinsert(staggerTable, 'UpdateBags')
+			end
+			if Chat.Initialized then
+				tinsert(staggerTable, 'UpdateChat')
+			end
+			if Tooltip.Initialized then
+				tinsert(staggerTable, 'UpdateTooltip')
+			end
+			tinsert(staggerTable, 'UpdateDataBars')
+			tinsert(staggerTable, 'UpdateDataTexts')
+			if Minimap.Initialized then
+				tinsert(staggerTable, 'UpdateMinimap')
+			end
+			if Auras.BuffFrame or Auras.DebuffFrame then
+				tinsert(staggerTable, 'UpdateAuras')
+			end
 			tinsert(staggerTable, 'UpdateMisc')
 			tinsert(staggerTable, 'UpdateEnd')
+
 			--Stagger updates
 			E.staggerUpdateRunning = true
 			E:UpdateStart()
@@ -1100,8 +1744,28 @@ function E:UpdateAll(doUpdates)
 		E:UpdateStart(true)
 
 		E:UpdateLayout()
+		if ActionBars.Initialized then
+			E:UpdateActionBars()
+		end
+		if NamePlates.Initialized then
+			E:UpdateNamePlates()
+		end
+		if Bags.Initialized then
+			E:UpdateBags()
+		end
 		if Chat.Initialized then
 			E:UpdateChat()
+		end
+		if Tooltip.Initialized then
+			E:UpdateTooltip()
+		end
+		E:UpdateDataBars()
+		E:UpdateDataTexts()
+		if Minimap.Initialized then
+			E:UpdateMinimap()
+		end
+		if Auras.BuffFrame or Auras.DebuffFrame then
+			E:UpdateAuras()
 		end
 		E:UpdateMisc()
 		E:UpdateEnd()
@@ -1228,6 +1892,8 @@ function E:ResetUI(...)
 		E:StaticPopup_Show('RESETUI_CHECK')
 		return
 	end
+
+	E:ResetMovers(...)
 end
 
 do
@@ -1292,6 +1958,36 @@ function E:InitializeModules()
 	end
 end
 
+function E:DBConversions()
+	-- release converts, only one call per version
+	if E.db.dbConverted ~= E.version then
+		E.db.dbConverted = E.version
+
+		E:DBConvertBFA()
+		E:DBConvertSL()
+		E:DBConvertDF()
+		E:DBConvertTWW()
+	end
+
+	-- development convert always
+	E:DBConvertDev()
+end
+
+function E:ConvertActionBarKeybinds()
+	for oldcmd, newcmd in pairs({ ELVUIBAR6BUTTON = 'ELVUIBAR2BUTTON', EXTRABAR7BUTTON = 'ELVUIBAR7BUTTON', EXTRABAR8BUTTON = 'ELVUIBAR8BUTTON', EXTRABAR9BUTTON = 'ELVUIBAR9BUTTON', EXTRABAR10BUTTON = 'ELVUIBAR10BUTTON' }) do
+		for i = 1, 12 do
+			local oldkey, newkey = format('%s%d', oldcmd, i), format('%s%d', newcmd, i)
+			for _, key in next, { GetBindingKey(oldkey) } do
+				SetBinding(key, newkey)
+			end
+		end
+	end
+
+	local cur = GetCurrentBindingSet()
+	if cur and cur > 0 then
+		SaveBindings(cur)
+	end
+end
 
 do
 	-- Shamelessly taken from AceDB-3.0 and stripped down by Simpy
@@ -1324,11 +2020,6 @@ do
 	end
 end
 
-function E:LoadCommands()
-	E:RegisterChatCommand('elvuichat', 'ToggleOptions')
-	E:RegisterChatCommand('ec', 'ToggleOptions')
-end
-
 function E:Initialize()
 	wipe(E.db)
 	wipe(E.global)
@@ -1337,13 +2028,12 @@ function E:Initialize()
 	E.myspec = GetSpecialization()
 	E.TimerunningID = PlayerGetTimerunningSeasonID and PlayerGetTimerunningSeasonID()
 
-	-- ElvUIChat: Use our namespaced database names
-	E.data = E.Libs.AceDB:New('ElvUIChatDB', E.DF, true)
+	E.data = E.Libs.AceDB:New('ElvDB', E.DF, true)
 	E.data.RegisterCallback(E, 'OnProfileChanged', 'StaggeredUpdateAll')
 	E.data.RegisterCallback(E, 'OnProfileCopied', 'StaggeredUpdateAll')
 	E.data.RegisterCallback(E, 'OnProfileReset', 'OnProfileReset')
 
-	E.charSettings = E.Libs.AceDB:New('ElvUIChatPrivateDB', E.privateVars)
+	E.charSettings = E.Libs.AceDB:New('ElvPrivateDB', E.privateVars)
 	E.charSettings.RegisterCallback(E, 'OnProfileChanged', ReloadUI)
 	E.charSettings.RegisterCallback(E, 'OnProfileCopied', ReloadUI)
 	E.charSettings.RegisterCallback(E, 'OnProfileReset', 'OnPrivateProfileReset')
@@ -1352,27 +2042,28 @@ function E:Initialize()
 	E:UIScale()
 	E:LoadStaticPopups()
 
-	-- Retail-only: DualSpec enhancement (currently disabled)
-	--E.Libs.DualSpec:EnhanceDatabase(E.data, 'ElvUI')
+	if not E.Classic or (E.ClassicSOD or E.ClassicAnniv or E.ClassicAnnivHC) then
+		E.Libs.DualSpec:EnhanceDatabase(E.data, 'ElvUI')
+	end
 
 	if E.OtherAddons.Tukui then
 		E:StaticPopup_Show('TUKUI_ELVUI_INCOMPATIBLE')
 	else
+		E:UpdateCurves()
 		E:BuildPrefixValues()
 		E:BuildAbbreviateConfigs()
 		E:LoadAPI()
 		E:LoadCommands()
 		E:InitializeModules()
+		E:LoadMovers()
 		E:UpdateMedia()
-
-		if E.UpdateCustomClassColors then
-			E:UpdateCustomClassColors()
-		end
+		E:UpdateAuraCurves()
+		E:UpdateDispelColors()
+		E:UpdateCustomClassColors()
 
 		E.initialized = true
 
-		-- ElvUIChat: Retail-only, always call Tutorials
-		if E.Tutorials then
+		if E.Retail then
 			E:Tutorials()
 		end
 
@@ -1385,12 +2076,13 @@ function E:Initialize()
 		end
 
 		if not E.private.install_complete then
-			-- ElvUIChat: Simple install - just mark as complete, chat works with defaults
-			E.private.install_complete = E.version
+			E:Install()
 		end
 
-		-- TODO: skip UPDATE_REQUEST popup in chat-only build
-		E.updateRequestTriggered = false
+		if E.version ~= E.Libs.version then
+			E.updateRequestTriggered = true
+			E:StaticPopup_Show('UPDATE_REQUEST')
+		end
 
 		if GetCVarBool('taintLog') then
 			E:StaticPopup_Show('TAINT_LOG')

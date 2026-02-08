@@ -2,10 +2,39 @@ local E, L, V, P, G = unpack(ElvUIChat)
 local S = E:GetModule('Skins')
 
 local _G = _G
-local ipairs, pairs = ipairs, pairs
+local ipairs, pairs, next = ipairs, pairs, next
 
 local FCF_GetCurrentChatFrame = FCF_GetCurrentChatFrame
 local hooksecurefunc = hooksecurefunc
+
+local function ReskinPickerOptions(self)
+	local scrollTarget = self.ScrollBox.ScrollTarget
+	if scrollTarget then
+		for _, child in next, { scrollTarget:GetChildren() } do
+			if not child.IsSkinned then
+				child.UnCheck:SetTexture(nil)
+				child.Highlight:SetColorTexture(1, .82, 0, 0.4)
+
+				local check = child.Check
+				if check then
+					check:SetColorTexture(1, .82, 0, 0.8)
+					check:SetSize(10, 10)
+					check:Point('LEFT', 2, 0)
+					check:CreateBackdrop('Transparent')
+				end
+
+				child.IsSkinned = true
+			end
+		end
+	end
+end
+
+local function HandleVoicePicker(voicePicker)
+	local customFrame = voicePicker:GetChildren()
+	customFrame:StripTextures()
+	customFrame:CreateBackdrop('Transparent')
+	voicePicker:HookScript('OnShow', ReskinPickerOptions)
+end
 
 function S:ChatConfig()
 	if not (E.private.skins.blizzard.enable and E.private.skins.blizzard.blizzardOptions) then return end
@@ -18,13 +47,13 @@ function S:ChatConfig()
 	hooksecurefunc('ChatConfig_UpdateCheckboxes', function(frame)
 		if not FCF_GetCurrentChatFrame() then return end
 
-		local nameString = frame:GetName()..'Checkbox'
+		local nameString = frame:GetName()..'CheckBox'
 		for index in ipairs(frame.checkBoxTable) do
-			local checkboxName = nameString..index
-			local checkbox = _G[checkboxName]
+			local checkBoxName = nameString..index
+			local checkbox = _G[checkBoxName]
 			if checkbox and not checkbox.IsSkinned then
 				checkbox:StripTextures()
-				S:HandleCheckBox(_G[checkboxName..'Check'])
+				S:HandleCheckBox(_G[checkBoxName..'Check'])
 
 				checkbox.IsSkinned = true
 			end
@@ -34,14 +63,14 @@ function S:ChatConfig()
 	hooksecurefunc('ChatConfig_CreateTieredCheckboxes', function(frame, checkBoxTable)
 		if frame.IsSkinned then return end
 
-		local nameString = frame:GetName()..'Checkbox'
+		local nameString = frame:GetName()..'CheckBox'
 		for index, value in ipairs(checkBoxTable) do
-			local checkboxName = nameString..index
-			S:HandleCheckBox(_G[checkboxName])
+			local checkBoxName = nameString..index
+			S:HandleCheckBox(_G[checkBoxName])
 
 			if value.subTypes then
 				for i in ipairs(value.subTypes) do
-					S:HandleCheckBox(_G[checkboxName..'_'..i])
+					S:HandleCheckBox(_G[checkBoxName..'_'..i])
 				end
 			end
 		end
@@ -56,21 +85,18 @@ function S:ChatConfig()
 
 				tab.IsSkinned = true
 			end
-
-			tab:SetWidth(80)
 		end
 	end)
 
-	do
-		local i = 1
+	for i = 1, 5 do
 		local tab = _G['CombatConfigTab'..i]
-		while tab do
+		if tab then
 			tab:StripTextures()
 
-			tab:SetWidth(i <= 2 and 90 or 70)
-
-			i = i + 1
-			tab = _G['CombatConfigTab'..i]
+			local text = tab.Text
+			if text then
+				text:SetWidth(text:GetWidth() + 10)
+			end
 		end
 	end
 
@@ -93,7 +119,6 @@ function S:ChatConfig()
 		_G.CombatConfigMessageSourcesDoneBy,
 		_G.CombatConfigColorsUnitColors,
 		_G.CombatConfigMessageSourcesDoneTo,
-		_G.ChatConfigTextToSpeechChannelSettingsLeft
 	}) do
 		frame:StripTextures()
 	end
@@ -157,7 +182,7 @@ function S:ChatConfig()
 	S:HandleButton(_G.ChatConfigFrameOkayButton)
 	S:HandleButton(_G.ChatConfigFrameDefaultButton)
 	S:HandleButton(_G.ChatConfigFrameRedockButton)
-
+	S:HandleButton(_G.ChatConfigFrame.ToggleChatButton)
 	S:HandleNextPrevButton(_G.ChatConfigMoveFilterUpButton, 'up')
 	S:HandleNextPrevButton(_G.ChatConfigMoveFilterDownButton, 'down')
 
@@ -176,17 +201,15 @@ function S:ChatConfig()
 	-- TextToSpeech
 	_G.TextToSpeechButton:StripTextures()
 
-	if _G.TextToSpeechFramePlaySampleButton then
-		S:HandleButton(_G.TextToSpeechFramePlaySampleButton)
-		S:HandleButton(_G.TextToSpeechFramePlaySampleAlternateButton)
-		S:HandleButton(_G.TextToSpeechDefaultButton)
-		S:HandleCheckBox(_G.TextToSpeechCharacterSpecificButton)
+	S:HandleButton(_G.TextToSpeechFramePlaySampleButton)
+	S:HandleButton(_G.TextToSpeechFramePlaySampleAlternateButton)
+	S:HandleButton(_G.TextToSpeechDefaultButton)
+	S:HandleCheckBox(_G.TextToSpeechCharacterSpecificButton)
 
-		S:HandleDropDownBox(_G.TextToSpeechFrameTtsVoiceDropdown)
-		S:HandleDropDownBox(_G.TextToSpeechFrameTtsVoiceAlternateDropdown)
-		S:HandleSliderFrame(_G.TextToSpeechFrameAdjustRateSlider)
-		S:HandleSliderFrame(_G.TextToSpeechFrameAdjustVolumeSlider)
-	end
+	S:HandleDropDownBox(_G.TextToSpeechFrameTtsVoiceDropdown)
+	S:HandleDropDownBox(_G.TextToSpeechFrameTtsVoiceAlternateDropdown)
+	S:HandleSliderFrame(_G.TextToSpeechFrameAdjustRateSlider)
+	S:HandleSliderFrame(_G.TextToSpeechFrameAdjustVolumeSlider)
 
 	for _, checkbox in pairs({ -- check boxes
 		'PlayActivitySoundWhenNotFocusedCheckButton',
@@ -211,6 +234,11 @@ function S:ChatConfig()
 			end
 		end
 	end)
+
+	HandleVoicePicker(_G.TextToSpeechFrameTtsVoicePicker)
+	HandleVoicePicker(_G.TextToSpeechFrameTtsVoiceAlternatePicker)
+
+	_G.ChatConfigTextToSpeechChannelSettingsLeft:StripTextures()
 end
 
 S:AddCallback('ChatConfig')

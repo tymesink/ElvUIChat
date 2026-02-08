@@ -33,8 +33,9 @@ local UnitHasVehicleUI = UnitHasVehicleUI
 local UnitInParty = UnitInParty
 local UnitInRaid = UnitInRaid
 local UnitIsUnit = UnitIsUnit
-local GetSpecialization = (E.Classic or E.Wrath and LCS.GetSpecialization) or GetSpecialization
-local GetSpecializationRole = (E.Classic or E.Wrath and LCS.GetSpecializationRole) or GetSpecializationRole
+-- ElvUIChat: Retail uses native GetSpecialization functions
+local GetSpecialization = GetSpecialization
+local GetSpecializationRole = GetSpecializationRole
 local C_PetBattles_IsInBattle = C_PetBattles and C_PetBattles.IsInBattle
 
 local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
@@ -125,12 +126,13 @@ do
 end
 
 function E:GetPlayerRole()
-	local role = (E.Retail or E.Wrath) and UnitGroupRolesAssigned('player') or 'NONE'
+	local role = UnitGroupRolesAssigned('player') -- Retail
 	return (role == 'NONE' and E.myspec and GetSpecializationRole(E.myspec)) or role
 end
 
 function E:CheckRole()
-	E.myspec = E.Retail and GetSpecialization()
+	-- ElvUIChat: Retail always uses GetSpecialization
+	E.myspec = GetSpecialization()
 	E.myrole = E:GetPlayerRole()
 end
 
@@ -201,8 +203,8 @@ function E:RegisterPetBattleHideFrames(object, originalParent, originalStrata)
 
 	object = _G[object] or object
 
-	--If already doing pokemon
-	if E.Retail and C_PetBattles_IsInBattle() then
+	-- ElvUIChat: Always check pet battles (Retail-only)
+	if C_PetBattles_IsInBattle() then
 		object:SetParent(E.HiddenFrame)
 	end
 
@@ -253,8 +255,8 @@ function E:RegisterObjectForVehicleLock(object, originalParent)
 		return
 	end
 
-	--Check if we are already in a vehicles
-	if (E.Retail or E.Wrath) and UnitHasVehicleUI('player') then
+	--Check if we are already in a vehicles (Retail)
+	if UnitHasVehicleUI('player') then
 		object:SetParent(E.HiddenFrame)
 	end
 
@@ -318,13 +320,8 @@ function E:PLAYER_ENTERING_WORLD(_, initLogin, isReload)
 		E.MediaUpdated = true
 	end
 
-	-- Blizzard will set this value to int(60/CVar cameraDistanceMax)+1 at logout if it is manually set higher than that
-	if not E.Retail and E.db.general.lockCameraDistanceMax then
-		SetCVar('cameraDistanceMaxZoomFactor', E.db.general.cameraDistanceMax)
-	end
-
-	local _, instanceType = GetInstanceInfo()
-	if instanceType == 'pvp' then
+	-- ElvUIChat: Retail doesn't need lockCameraDistanceMax (removed Classic logic)
+	if InCombatLockdown() then
 		E.BGTimer = E:ScheduleRepeatingTimer('RequestBGInfo', 5)
 		E:RequestBGInfo()
 	elseif E.BGTimer then
@@ -352,15 +349,7 @@ function E:PLAYER_REGEN_DISABLED()
 		end
 	--end
 
-	if E.CreatedMovers then
-		for name in pairs(E.CreatedMovers) do
-			local mover = _G[name]
-			if mover and mover:IsShown() then
-				mover:Hide()
-				err = true
-			end
-		end
-	end
+	-- ElvUIChat: Removed mover check - movers not needed for chat-only addon
 
 	if err then
 		E:Print(ERR_NOT_IN_COMBAT)
@@ -368,11 +357,13 @@ function E:PLAYER_REGEN_DISABLED()
 end
 
 function E:XPIsUserDisabled()
-	return E.Retail and IsXPUserDisabled()
+	-- ElvUIChat: Retail always uses IsXPUserDisabled
+	return IsXPUserDisabled()
 end
 
 function E:XPIsTrialMax()
-	return E.Retail and (IsRestrictedAccount() or IsTrialAccount() or IsVeteranTrialAccount()) and (E.myLevel == 20)
+	-- ElvUIChat: Retail trial account check
+	return (IsRestrictedAccount() or IsTrialAccount() or IsVeteranTrialAccount()) and (E.myLevel == 20)
 end
 
 function E:XPIsLevelMax()
@@ -398,20 +389,23 @@ function E:GetGroupUnit(unit)
 end
 
 function E:PositionGameMenuButton()
-	if E.Retail then
-		GameMenuFrame.Header.Text:SetTextColor(unpack(E.media.rgbvaluecolor))
-	end
-	GameMenuFrame:Height(GameMenuFrame:GetHeight() + GameMenuButtonLogout:GetHeight() - 4)
+	local logout = _G.GameMenuButtonLogout
+	-- TODO: revisit guard when logout button is nil; ensure menu creation timing is correct
+	if not (logout and GameMenuFrame and GameMenuFrame.Header and GameMenuFrame.Header.Text) then return end
+
+	-- ElvUIChat: Always set GameMenu header color (Retail-only)
+	GameMenuFrame.Header.Text:SetTextColor(unpack(E.media.rgbvaluecolor))
+	GameMenuFrame:Height(GameMenuFrame:GetHeight() + logout:GetHeight() - 4)
 
 	local button = GameMenuFrame[E.name]
 	button:SetFormattedText('%s%s|r', E.media.hexvaluecolor, E.name)
 
-	local _, relTo, _, _, offY = GameMenuButtonLogout:GetPoint()
+	local _, relTo, _, _, offY = logout:GetPoint()
 	if relTo ~= button then
 		button:ClearAllPoints()
 		button:Point('TOPLEFT', relTo, 'BOTTOMLEFT', 0, -1)
-		GameMenuButtonLogout:ClearAllPoints()
-		GameMenuButtonLogout:Point('TOPLEFT', button, 'BOTTOMLEFT', 0, offY)
+		logout:ClearAllPoints()
+		logout:Point('TOPLEFT', button, 'BOTTOMLEFT', 0, offY)
 	end
 end
 
@@ -436,10 +430,15 @@ function E:SetupGameMenu()
 	button:SetScript('OnClick', E.ClickGameMenu)
 	GameMenuFrame[E.name] = button
 
-	if not E:IsAddOnEnabled('ConsolePortUI_Menu') then
-		button:Size(GameMenuButtonLogout:GetWidth(), GameMenuButtonLogout:GetHeight())
+	local logout = _G.GameMenuButtonLogout
+	if logout and not E:IsAddOnEnabled('ConsolePortUI_Menu') then
+		button:Size(logout:GetWidth(), logout:GetHeight())
 		button:Point('TOPLEFT', GameMenuButtonAddons, 'BOTTOMLEFT', 0, -1)
 		hooksecurefunc('GameMenuFrame_UpdateVisibleButtons', E.PositionGameMenuButton)
+	else
+		-- TODO: fallback size/anchor when logout button missing or ConsolePort UI replaces it; evaluate if we can drop
+		button:Size(152, 22)
+		button:Point('TOPLEFT', GameMenuButtonAddons or GameMenuFrame.Header, 'BOTTOMLEFT', 0, -1)
 	end
 end
 
@@ -450,19 +449,13 @@ function E:LoadAPI()
 	E:RegisterEvent('PLAYER_REGEN_DISABLED')
 	E:SetupGameMenu()
 
-	if E.Retail then
-		E:RegisterEvent('NEUTRAL_FACTION_SELECT_RESULT')
-		E:RegisterEvent('PET_BATTLE_CLOSE', 'AddNonPetBattleFrames')
-		E:RegisterEvent('PET_BATTLE_OPENING_START', 'RemoveNonPetBattleFrames')
-		E:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED', 'CheckRole')
-	end
-
-	if E.Retail or E.Wrath then
-		E:RegisterEvent('UNIT_ENTERED_VEHICLE', 'EnterVehicleHideFrames')
-		E:RegisterEvent('UNIT_EXITED_VEHICLE', 'ExitVehicleShowFrames')
-	else
-		E:RegisterEvent('CHARACTER_POINTS_CHANGED', 'CheckRole')
-	end
+	-- ElvUIChat: Always register Retail events
+	E:RegisterEvent('NEUTRAL_FACTION_SELECT_RESULT')
+	E:RegisterEvent('PET_BATTLE_CLOSE', 'AddNonPetBattleFrames')
+	E:RegisterEvent('PET_BATTLE_OPENING_START', 'RemoveNonPetBattleFrames')
+	E:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED', 'CheckRole')
+	E:RegisterEvent('UNIT_ENTERED_VEHICLE', 'EnterVehicleHideFrames')
+	E:RegisterEvent('UNIT_EXITED_VEHICLE', 'ExitVehicleShowFrames')
 
 	do -- setup cropIcon texCoords
 		local opt = E.db.general.cropIcon

@@ -46,7 +46,8 @@ C.Values = {
 do
 	C.StateSwitchGetText = function(_, TEXT)
 		local friend, enemy = strmatch(TEXT, '^Friendly:([^,]*)'), strmatch(TEXT, '^Enemy:([^,]*)')
-		local text, blockB, blockS, blockT = friend or enemy or TEXT
+			local text = friend or enemy or TEXT
+			local blockB, blockS, blockT
 		local SF, localized = E.global.unitframe.specialFilters[text], L[text]
 		if SF and localized and text:match('^block') then blockB, blockS, blockT = localized:match('^%[(.-)](%s?)(.+)') end
 		local filterText = (blockB and format('|cFF999999%s|r%s%s', blockB, blockS, blockT)) or localized or text
@@ -64,7 +65,8 @@ do
 		if not filter then return end
 		local found = filterMatch(filter, E:EscapeString(value))
 		if found and movehere then
-			local tbl, sv, sm = {strsplit(',',filter)}
+			local tbl = {strsplit(',', filter)}
+			local sv, sm
 			for i in ipairs(tbl) do
 				if tbl[i] == value then sv = i elseif tbl[i] == movehere then sm = i end
 				if sv and sm then break end
@@ -88,7 +90,8 @@ do
 			if state then
 				local stateFound = filterMatch(filter, E:EscapeString(state))
 				if not stateFound then
-					local tbl, sv = {strsplit(',',filter)}
+					local tbl = {strsplit(',', filter)}
+					local sv
 					for i in ipairs(tbl) do
 						if tbl[i] == value then
 							sv = i
@@ -148,9 +151,8 @@ function E:LoadConfigOptions_Core()
 
 	E.Libs.AceConfig:RegisterOptionsTable('ElvProfiles', E.Options.args.profiles.args.profile)
 
-	if E.Retail or E.Wrath then
-		E.Libs.DualSpec:EnhanceOptions(E.Options.args.profiles.args.profile, E.data)
-	end
+	-- ElvUIChat: Always enhance DualSpec options (Retail-only)
+	E.Libs.DualSpec:EnhanceOptions(E.Options.args.profiles.args.profile, E.data)
 
 	E.Libs.AceConfig:RegisterOptionsTable('ElvPrivates', E.Options.args.profiles.args.private)
 
@@ -184,11 +186,11 @@ function E:LoadConfigOptions_Chat()
     General.args.hyperlinkHover = ACH:Toggle('Hyperlink Hover', 'Display the hyperlink tooltip while hovering over a hyperlink.', 4, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:ToggleHyperlink(value) end)
     General.args.sticky = ACH:Toggle('Sticky Chat', 'When opening the Chat Editbox to type a message having this option set means it will retain the last channel you spoke in. If this option is turned off opening the Chat Editbox should always default to the SAY channel.', 5)
     General.args.emotionIcons = ACH:Toggle('Emotion Icons', 'Display emotion icons in chat.', 6)
-    General.args.lfgIcons = ACH:Toggle('Role Icon', 'Display LFG Icons in group chat.', 7, nil, nil, nil, nil, function(info, value) E.db.chat.lfgIcons = value CH:CheckLFGRoles() end, nil, not E.Retail)
+    General.args.lfgIcons = ACH:Toggle('Role Icon', 'Display LFG Icons in group chat.', 7, nil, nil, nil, nil, function(info, value) E.db.chat.lfgIcons = value CH:CheckLFGRoles() end) -- Retail
     General.args.useAltKey = ACH:Toggle('Use Alt Key', 'Require holding the Alt key down to move cursor or cycle through messages in the editbox.', 8, nil, nil, nil, nil, function(info, value) E.db.chat.useAltKey = value CH:UpdateSettings() end)
-    General.args.autoClosePetBattleLog = ACH:Toggle('Auto-Close Pet Battle Log', nil, 9, nil, nil, nil, nil, nil, nil, not E.Retail)
+    General.args.autoClosePetBattleLog = ACH:Toggle('Auto-Close Pet Battle Log', nil, 9) -- Retail
     General.args.useBTagName = ACH:Toggle('Use Real ID BattleTag', 'Use BattleTag instead of Real ID names in chat. Chat History will always use BattleTag.', 10)
-    General.args.socialQueueMessages = ACH:Toggle('Quick Join Messages', 'Show clickable Quick Join messages inside of the chat.', 11, nil, nil, nil, nil, nil, nil, not E.Retail)
+    General.args.socialQueueMessages = ACH:Toggle('Quick Join Messages', 'Show clickable Quick Join messages inside of the chat.', 11) -- Retail
     General.args.copyChatLines = ACH:Toggle('Copy Chat Lines', 'Adds an arrow infront of the chat lines to copy the entire line.', 12)
     General.args.hideCopyButton = ACH:Toggle('Hide Copy Button', nil, 13, nil, nil, nil, nil, function(info, value) E.db.chat.hideCopyButton = value CH:ToggleCopyChatButtons() end)
     General.args.spacer = ACH:Spacer(14, 'full')

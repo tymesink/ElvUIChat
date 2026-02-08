@@ -1,5 +1,6 @@
 <Ui xmlns='http://www.blizzard.com/wow/ui/'>
 	<Script file='init.lua'/>
+	<Include file='Templates.xml'/>
 	<Include file ='Locales\Load_Locales.xml'/>
 	<Include file ='Media\Load_Media.xml'/>
 	<Include file ='Defaults\Load_Defaults.xml'/>

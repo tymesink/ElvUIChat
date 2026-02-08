@@ -79,9 +79,8 @@ function E:UIScale()
 		E.UIParent:SetSize(width, height)
 		E.UIParent.origHeight = E.UIParent:GetHeight()
 
-		if E.Retail then
-			E:RefreshGlobalFX()
-		end
+		-- ElvUIChat: Always refresh global FX (Retail-only)
+		E:RefreshGlobalFX()
 
 		if E:IsEventRegisteredForObject('PLAYER_REGEN_ENABLED', E.UIScale) then
 			E:UnregisterEventForObject('PLAYER_REGEN_ENABLED', E.UIScale, E.UIScale)
@@ -108,7 +107,7 @@ end
 
 function E:Scale(x)
 	local m = E.mult
-	if m == 1 or x == 0 then
+	if not m or m == 1 or x == 0 then  -- ElvUIChat: Guard against nil mult
 		return x
 	else
 		local y = m > 1 and m or -m
