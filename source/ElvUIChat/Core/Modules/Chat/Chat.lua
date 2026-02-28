@@ -931,7 +931,7 @@ function CH:StyleChat(frame)
 	-- Use a dedicated child backdrop frame (CreateBackdrop) rather than SetTemplate on the
 	-- ScrollingMessageFrame directly, since special frame types don't reliably support SetBackdrop.
 	-- allPoints=true keeps the backdrop the same size as the chat frame.
-	frame:CreateBackdrop('Transparent', nil, true, nil, nil, nil, nil, nil, true)
+	frame:CreateBackdrop('Transparent', nil, true, nil, nil, nil, nil, true)
 	local panelColor = CH.db.panelColor
 	frame.backdrop:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
 
