@@ -623,7 +623,6 @@ function E:Initialize()
 	E.charSettings.RegisterCallback(E, 'OnProfileReset', 'OnPrivateProfileReset')
 
 	E:UpdateDB()
-	E:UIScale()
 	E:LoadStaticPopups()
 
 	E:LoadAPI()
