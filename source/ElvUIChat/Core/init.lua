@@ -128,7 +128,6 @@ do
 	E:AddLib('ACH', 'LibAceConfigHelper')
 	E:AddLib('LSM', 'LibSharedMedia-3.0')
 	E:AddLib('ACL', 'AceLocale-3.0-ElvUIChat')
-	E:AddLib('SimpleSticky', 'LibSimpleSticky-1.0')
 	E:AddLib('Deflate', 'LibDeflate')
 	
 	-- libraries used for options
