@@ -77,12 +77,17 @@ local E, L, V, P, G = unpack(ElvUIChat)
 
 ### Libraries (`E.Libs.*`)
 ```lua
-E.Libs.LSM        -- LibSharedMedia-3.0
-E.Libs.AceDB      -- AceDB-3.0
-E.Libs.ACH        -- LibAceConfigHelper
-E.Libs.ACL        -- AceLocale-3.0-ElvUIChat (note: ElvUIChat suffix!)
-E.Libs.Deflate    -- LibDeflate
-E.Libs.DualSpec   -- LibDualSpec-1.0
+E.Libs.LSM               -- LibSharedMedia-3.0
+E.Libs.AceDB             -- AceDB-3.0
+E.Libs.ACH               -- LibAceConfigHelper
+E.Libs.ACL               -- AceLocale-3.0-ElvUIChat (note: ElvUIChat suffix!)
+E.Libs.Deflate           -- LibDeflate
+-- Options libs:
+E.Libs.AceGUI            -- AceGUI-3.0
+E.Libs.AceConfig         -- AceConfig-3.0-ElvUIChat
+E.Libs.AceConfigDialog   -- AceConfigDialog-3.0-ElvUIChat
+E.Libs.AceConfigRegistry -- AceConfigRegistry-3.0-ElvUIChat
+E.Libs.AceDBOptions      -- AceDBOptions-3.0
 ```
 
 ## Updating from ElvUI Source
