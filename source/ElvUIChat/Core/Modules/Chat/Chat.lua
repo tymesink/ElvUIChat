@@ -1546,7 +1546,7 @@ function CH:PositionChat(chat)
 
 	if chat.FontStringContainer then -- dont use setoutside
 		chat.FontStringContainer:ClearAllPoints()
-		chat.FontStringContainer:SetPoint('TOPLEFT', -3, 3)
+		chat.FontStringContainer:SetPoint('TOPLEFT', -3, 0)
 		chat.FontStringContainer:SetPoint('BOTTOMRIGHT', 3, -3)
 	end
 

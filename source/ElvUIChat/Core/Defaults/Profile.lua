@@ -82,7 +82,7 @@ P.chat = {
 	},
 	historySize = 100,
 	editboxHistorySize = 20,
-	tabSelector = 'ARROW1',
+	tabSelector = 'BOX1',
 	tabSelectedTextEnabled = true,
 	tabSelectedTextColor = { r = 1, g = 1, b = 1 },
 	tabSelectorColor = { r = .3, g = 1, b = .3 },
