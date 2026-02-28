@@ -2781,15 +2781,6 @@ function CH:CheckKeyword(message, author)
 	return rebuiltString
 end
 
-function CH:AddLines(lines, ...)
-	for i = select('#', ...), 1, -1 do
-	local x = select(i, ...)
-		if x:IsObjectType('FontString') and not x:GetName() then
-			tinsert(lines, x:GetText())
-		end
-	end
-end
-
 function CH:ChatEdit_OnEnterPressed(editBox)
 	editBox:ClearHistory() -- we will use our own editbox history so keeping them populated on blizzards end is pointless
 
