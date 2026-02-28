@@ -1,7 +1,4 @@
 local E, L, V, P, G = unpack(ElvUIChat)
--- Modules we don't have - make them nil-safe
-local UF = E.GetModule and E:GetModule('UnitFrames', true)
-local NP = E.GetModule and E:GetModule('NamePlates', true)
 
 local _G = _G
 local strsub, type = strsub, type
@@ -219,8 +216,7 @@ local function SetTemplate(frame, template, glossTex, ignoreUpdates, forcePixelM
 		end
 
 		local notPixelMode = not isUnitFrameElement and not isNamePlateElement and not E.PixelMode
-		local notThinBorders = (isUnitFrameElement and UF and not UF.thinBorders) or (isNamePlateElement and NP and not NP.thinBorders)
-		if (notPixelMode or notThinBorders) and not forcePixelMode then
+		if notPixelMode and not forcePixelMode then
 			local backdrop = {
 				edgeFile = E.media.blankTex,
 				edgeSize = noScale and 1 or E:Scale(1)
@@ -279,8 +275,7 @@ local function CreateBackdrop(frame, template, glossTex, ignoreUpdates, forcePix
 		if forcePixelMode then
 			backdrop:SetOutside(frame, E.twoPixelsPlease and 2 or 1, E.twoPixelsPlease and 2 or 1, nil, noScale)
 		else
-			local border = (isUnitFrameElement and UF and UF.BORDER) or (isNamePlateElement and NP and NP.BORDER) or E.Border
-			backdrop:SetOutside(frame, border, border, nil, noScale)
+			backdrop:SetOutside(frame, E.Border, E.Border, nil, noScale)
 		end
 	end
 
@@ -372,8 +367,6 @@ local function FontTemplate(fs, font, size, style, skip)
 	fs:SetShadowOffset((shadow and 1) or 0, (shadow and -1) or 0)
 
 	fs:SetFont(resolvedFont, size, style)
-
-	E.texts[fs] = true
 end
 
 local function StyleButton(button, noHover, noPushed, noChecked)
