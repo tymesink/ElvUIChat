@@ -59,13 +59,11 @@ E.media = {}
 E.media.bordercolor = {0, 0, 0, 1}  -- ElvUIChat: Initialize early for Toolkit.lua
 E.media.backdropcolor = {0.1, 0.1, 0.1, 1}  -- ElvUIChat: Initialize early for Toolkit.lua
 E.media.backdropfadecolor = {0.06, 0.06, 0.06, 0.8}  -- ElvUIChat: Initialize early for Toolkit.lua
-E.media.unitframeBorderColor = {0, 0, 0, 1}  -- ElvUIChat: Initialize early for Toolkit.lua
 E.media.rgbvaluecolor = {1, 1, 1}  -- ElvUIChat: Initialize early for Skins.lua
 E.media.hexvaluecolor = 'FFFFFFFF'  -- ElvUIChat: Initialize early
 E.media.normTex = E.ClearTexture -- TODO: replace with real texture after LSM fetch
 E.media.glossTex = E.ClearTexture -- TODO: replace with real texture after LSM fetch
 E.frames = {}
-E.unitFrameElements = {}
 -- ElvUIChat: These tables are now initialized in init.lua (early init before General files load)
 -- E.RegisteredModules, E.RegisteredInitialModules, E.valueColorUpdateFuncs, E.TexCoords
 
@@ -279,15 +277,6 @@ function E:UpdateFrameTemplates()
 		end
 	end
 
-	for frame in pairs(E.unitFrameElements) do
-		if frame and frame.template and not frame:IsForbidden() then
-			if not (frame.ignoreUpdates or frame.ignoreFrameTemplates) then
-				frame:SetTemplate(frame.template, frame.glossTex, nil, frame.forcePixelMode, frame.isUnitFrameElement)
-			end
-		else
-			E.unitFrameElements[frame] = nil
-		end
-	end
 end
 
 do
@@ -405,8 +394,6 @@ function E:UpdateDB()
 	E.db = E.data.profile
 
 	E:SetupDB()
-
-	-- ElvUIChat: Removed unitframe border color defaults - we don't have UnitFrames module
 end
 
 

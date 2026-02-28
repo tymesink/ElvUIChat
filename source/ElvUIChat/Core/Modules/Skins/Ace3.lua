@@ -143,7 +143,7 @@ function S:Ace3_RegisterAsWidget(widget)
 		local checkbg = widget.checkbg
 		local highlight = widget.highlight
 
-		checkbg:CreateBackdrop(nil, nil, nil, nil, nil, nil, nil, nil, true)
+		checkbg:CreateBackdrop(nil, nil, nil, nil, nil, nil, true)
 		checkbg.backdrop:SetInside(widget.checkbg, 4, 4)
 
 		checkbg:SetTexture()
@@ -199,7 +199,7 @@ function S:Ace3_RegisterAsWidget(widget)
 		local text = frame.text
 
 		frame:StripTextures()
-		frame:CreateBackdrop(nil, nil, nil, nil, nil, nil, nil, nil, true)
+		frame:CreateBackdrop(nil, nil, nil, nil, nil, nil, true)
 		frame.backdrop:Point('TOPLEFT', 0, -21)
 		frame.backdrop:Point('BOTTOMRIGHT', -4, -1)
 

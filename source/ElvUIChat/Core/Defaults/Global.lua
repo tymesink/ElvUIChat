@@ -23,19 +23,3 @@ G.datatexts = {
 	},
 }
 
-G.profileCopy = {
-	--Specific values
-	selected = 'Default',
-	movers = {},
-	--Modules
-	chat = {
-		general = true
-	},
-	datatexts = {
-		general = false,
-		panels = false
-	},
-	general = {
-		general = false,
-	}
-}

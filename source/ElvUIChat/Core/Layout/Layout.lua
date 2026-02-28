@@ -22,25 +22,6 @@ end
 
 local barHeight = BAR_HEIGHT + 1
 local toggleWidth = TOGGLE_WIDTH + 1
-function LO:RefreshChatMovers()
-	local LeftChatPanel = _G.LeftChatPanel
-	local LeftChatMover = _G.LeftChatMover
-	-- TODO: movers stripped in chat-only build; decide if we reintroduce a mover stub
-	if not (LeftChatPanel and LeftChatMover) then return end
-	local Left = LeftChatPanel:GetPoint()
-	local showLeftPanel = E.db.datatexts.panels.LeftChatDataPanel.enable
-	
-	if not showLeftPanel or E.db.chat.LeftChatDataPanelAnchor == 'ABOVE_CHAT' then
-		LeftChatPanel:Point(Left, LeftChatMover, 0, 0)
-	elseif showLeftPanel then
-		LeftChatPanel:Point(Left, LeftChatMover, 0, barHeight)
-	end
-
-	-- mover sizes: same as in CH.PositionChats for panels but including the datatext bar height
-	local panelWidth, panelHeight = E:Scale(E.db.chat.panelWidth), E:Scale(E.db.chat.panelHeight)
-	LeftChatMover:SetSize(panelWidth, panelHeight + (showLeftPanel and barHeight or 0))
-end
-
 function LO:RepositionChatDataPanels()
 	if not (_G.LeftChatTab and _G.LeftChatPanel and _G.LeftChatDataPanel and _G.LeftChatToggleButton) then return end
 
@@ -71,7 +52,6 @@ function LO:RepositionChatDataPanels()
 		LeftChatToggleButton:Point('BOTTOMLEFT', LeftChatDataPanel, 'BOTTOMLEFT', -toggleWidth, 0)
 	end
 
-	LO:RefreshChatMovers()
 end
 
 function LO:SetChatTabStyle()
@@ -91,8 +71,6 @@ function LO:ToggleChatPanels()
 
 	local showToggles = not E.db.chat.hideChatToggles
 	_G.LeftChatToggleButton:SetShown(showToggles and showLeftPanel)
-
-	LO:RefreshChatMovers()
 
 	local panelBackdrop = E.db.chat.panelBackdrop
 	if panelBackdrop == 'SHOWBOTH' then

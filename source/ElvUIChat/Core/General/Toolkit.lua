@@ -91,7 +91,7 @@ local function BackdropFrameLower(backdrop, parent)
 	end
 end
 
-local function GetTemplate(template, isUnitFrameElement)
+local function GetTemplate(template)
 	backdropa, bordera = 1, 1
 
 	if template == 'ClassColor' then
@@ -99,10 +99,10 @@ local function GetTemplate(template, isUnitFrameElement)
 		borderr, borderg, borderb = color.r, color.g, color.b
 		backdropr, backdropg, backdropb = unpack(E.media.backdropcolor)
 	elseif template == 'Transparent' then
-		borderr, borderg, borderb = unpack(isUnitFrameElement and E.media.unitframeBorderColor or E.media.bordercolor)
+		borderr, borderg, borderb = unpack(E.media.bordercolor)
 		backdropr, backdropg, backdropb, backdropa = unpack(E.media.backdropfadecolor)
 	else
-		borderr, borderg, borderb = unpack(isUnitFrameElement and E.media.unitframeBorderColor or E.media.bordercolor)
+		borderr, borderg, borderb = unpack(E.media.bordercolor)
 		backdropr, backdropg, backdropb = unpack(E.media.backdropcolor)
 	end
 end
@@ -180,15 +180,13 @@ local function SetInside(obj, anchor, xOffset, yOffset, anchor2, noScale)
 	obj:SetPoint('BOTTOMRIGHT', anchor2 or anchor, 'BOTTOMRIGHT', -x, y)
 end
 
-local function SetTemplate(frame, template, glossTex, ignoreUpdates, forcePixelMode, isUnitFrameElement, isNamePlateElement, noScale)
-	GetTemplate(template, isUnitFrameElement)
+local function SetTemplate(frame, template, glossTex, ignoreUpdates, forcePixelMode, noScale)
+	GetTemplate(template)
 
 	frame.template = template or 'Default'
 	frame.glossTex = glossTex
 	frame.ignoreUpdates = ignoreUpdates
 	frame.forcePixelMode = forcePixelMode
-	frame.isUnitFrameElement = isUnitFrameElement
-	frame.isNamePlateElement = isNamePlateElement
 
 	if not frame.SetBackdrop then
 		_G.Mixin(frame, _G.BackdropTemplateMixin)
@@ -215,7 +213,7 @@ local function SetTemplate(frame, template, glossTex, ignoreUpdates, forcePixelM
 			frame:SetBackdropColor(backdropr, backdropg, backdropb, frame.customBackdropAlpha or (template == 'Transparent' and backdropa) or 1)
 		end
 
-		local notPixelMode = not isUnitFrameElement and not isNamePlateElement and not E.PixelMode
+		local notPixelMode = not E.PixelMode
 		if notPixelMode and not forcePixelMode then
 			local backdrop = {
 				edgeFile = E.media.blankTex,
@@ -250,20 +248,16 @@ local function SetTemplate(frame, template, glossTex, ignoreUpdates, forcePixelM
 	frame:SetBackdropBorderColor(borderr, borderg, borderb, bordera)
 
 	if not frame.ignoreUpdates then
-		if frame.isUnitFrameElement then
-			E.unitFrameElements[frame] = true
-		else
-			E.frames[frame] = true
-		end
+		E.frames[frame] = true
 	end
 end
 
-local function CreateBackdrop(frame, template, glossTex, ignoreUpdates, forcePixelMode, isUnitFrameElement, isNamePlateElement, noScale, allPoints, frameLevel)
+local function CreateBackdrop(frame, template, glossTex, ignoreUpdates, forcePixelMode, noScale, allPoints, frameLevel)
 	local parent = (frame.IsObjectType and frame:IsObjectType('Texture') and frame:GetParent()) or frame
 	local backdrop = frame.backdrop or CreateFrame('Frame', nil, parent)
 	if not frame.backdrop then frame.backdrop = backdrop end
 
-	backdrop:SetTemplate(template, glossTex, ignoreUpdates, forcePixelMode, isUnitFrameElement, isNamePlateElement, noScale)
+	backdrop:SetTemplate(template, glossTex, ignoreUpdates, forcePixelMode, noScale)
 
 	if allPoints then
 		if allPoints == true then
