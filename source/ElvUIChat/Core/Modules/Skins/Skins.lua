@@ -245,7 +245,7 @@ function S:StatusBarColorGradient(bar, value, max, backdrop)
 	local current = (not max and value) or (value and max and max ~= 0 and value/max)
 	if not current then return end
 
-	local r, g, b = E:ColorGradient(current, 0.8,0,0, 0.8,0.8,0, 0,0.8,0)
+	local r, g, b = ColorGradient(current, 0.8,0,0, 0.8,0.8,0, 0,0.8,0)
 	bar:SetStatusBarColor(r, g, b)
 
 	if not backdrop then

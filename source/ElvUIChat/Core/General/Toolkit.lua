@@ -51,37 +51,8 @@ do
 		frame:SetTexCoord(left, right, top, bottom)
 	end
 
-	function E:GetTexCoords()
-		return left, right, top, bottom
-	end
-
-	function E:UpdateTexCoords()
-		local m = 0.04 * (E.db.general.cropIcon or 2)
-		for i, v in next, E.TexCoords do
-			local value = (i % 2 == 0) and (v - m) or (v + m)
-
-			E.TexCoords[i] = value
-
-			if i == 1 then left = value
-			elseif i == 2 then right = value
-			elseif i == 3 then top = value
-			elseif i == 4 then bottom = value end
-		end
-	end
 end
 
--- 8.2 restricted frame check
-function E:SetPointsRestricted(frame)
-	if frame and not pcall(frame.GetPoint, frame) then
-		return true
-	end
-end
-
-function E:SafeGetPoint(frame)
-	if frame and frame.GetPoint and not E:SetPointsRestricted(frame) then
-		return frame:GetPoint()
-	end
-end
 
 local function WatchPixelSnap(frame, snap)
 	if (frame and not frame:IsForbidden()) and frame.PixelSnapDisabled and snap then
@@ -139,19 +110,6 @@ local function GetTemplate(template, isUnitFrameElement)
 	end
 end
 
-local function GetChild(frame, child, index, debug)
-	local name = frame and child and ((debug and frame.GetDebugName and frame:GetDebugName()) or (frame.GetName and frame:GetName()))
-	if not name then return nil end
-	if not index then index = '' end
-
-	-- try keyed first
-	local main = _G[name]
-	local sub = main and main[child..index]
-	if sub then return sub end
-
-	-- if its not keyed try named
-	return _G[name..child..index]
-end
 
 local function Size(frame, width, height, ...)
 	local w = E:Scale(width)
@@ -184,54 +142,6 @@ local function Point(obj, arg1, arg2, arg3, arg4, arg5, ...)
 	obj:SetPoint(arg1, arg2, arg3, arg4, arg5, ...)
 end
 
-local function GrabPoint(obj, pointValue)
-	if type(pointValue) == 'string' then
-		local pointIndex = tonumber(pointValue) -- but why?
-		if not pointIndex then
-			for i = 1, obj:GetNumPoints() do
-				local point, relativeTo, relativePoint, xOfs, yOfs = obj:GetPoint(i)
-				if not point then
-					break
-				elseif point == pointValue then
-					return point, relativeTo, relativePoint, xOfs, yOfs
-				end
-			end
-		end
-
-		pointValue = pointIndex -- convert it, if possible
-	end
-
-	return obj:GetPoint(pointValue)
-end
-
-local function NudgePoint(obj, xAxis, yAxis, noScale, pointValue, clearPoints)
-	if not xAxis then xAxis = 0 end
-	if not yAxis then yAxis = 0 end
-
-	local x = (noScale and xAxis) or E:Scale(xAxis)
-	local y = (noScale and yAxis) or E:Scale(yAxis)
-
-	local point, relativeTo, relativePoint, xOfs, yOfs = GrabPoint(obj, pointValue)
-
-	if clearPoints or E:SetPointsRestricted(obj) then
-		obj:ClearAllPoints()
-	end
-
-	obj:SetPoint(point, relativeTo, relativePoint, xOfs + x, yOfs + y)
-end
-
-local function PointXY(obj, xOffset, yOffset, noScale, pointValue, clearPoints)
-	local x = xOffset and ((noScale and xOffset) or E:Scale(xOffset))
-	local y = yOffset and ((noScale and yOffset) or E:Scale(yOffset))
-
-	local point, relativeTo, relativePoint, xOfs, yOfs = GrabPoint(obj, pointValue)
-
-	if clearPoints or E:SetPointsRestricted(obj) then
-		obj:ClearAllPoints()
-	end
-
-	obj:SetPoint(point, relativeTo, relativePoint, x or xOfs, y or yOfs)
-end
 
 local function SetOutside(obj, anchor, xOffset, yOffset, anchor2, noScale)
 	if not anchor then anchor = obj:GetParent() end
@@ -379,27 +289,6 @@ local function CreateBackdrop(frame, template, glossTex, ignoreUpdates, forcePix
 	end
 end
 
-local function CreateShadow(frame, size, pass)
-	if not pass and frame.shadow then return end
-	if not size then size = 3 end
-
-	backdropr, backdropg, backdropb, borderr, borderg, borderb = 0, 0, 0, 0, 0, 0
-
-	local offset = (E.PixelMode and size) or (size + 1)
-	local shadow = CreateFrame('Frame', nil, frame, 'BackdropTemplate')
-	shadow:SetFrameLevel(1)
-	shadow:SetFrameStrata(frame:GetFrameStrata())
-	shadow:SetOutside(frame, offset, offset, nil, true)
-	shadow:SetBackdrop({edgeFile = E.Media.Textures.GlowTex, edgeSize = size})
-	shadow:SetBackdropColor(backdropr, backdropg, backdropb, 0)
-	shadow:SetBackdropBorderColor(borderr, borderg, borderb, 0.9)
-
-	if pass then
-		return shadow
-	else
-		frame.shadow = shadow
-	end
-end
 
 local function Kill(object)
 	if object.UnregisterAllEvents then
@@ -517,33 +406,6 @@ local function StyleButton(button, noHover, noPushed, noChecked)
 	end
 end
 
-local CreateCloseButton
-do
-	local CloseButtonOnClick = function(btn) btn:GetParent():Hide() end
-	local CloseButtonOnEnter = function(btn) if btn.Texture then btn.Texture:SetVertexColor(unpack(E.media.rgbvaluecolor)) end end
-	local CloseButtonOnLeave = function(btn) if btn.Texture then btn.Texture:SetVertexColor(1, 1, 1) end end
-	CreateCloseButton = function(frame, size, offset, texture, backdrop)
-		if frame.CloseButton then return end
-
-		local CloseButton = CreateFrame('Button', nil, frame)
-		CloseButton:Size(size or 16)
-		CloseButton:Point('TOPRIGHT', offset or -6, offset or -6)
-
-		if backdrop then
-			CloseButton:CreateBackdrop(nil, true)
-		end
-
-		CloseButton.Texture = CloseButton:CreateTexture(nil, 'OVERLAY')
-		CloseButton.Texture:SetAllPoints()
-		CloseButton.Texture:SetTexture(texture or E.Media.Textures.Close)
-
-		CloseButton:SetScript('OnClick', CloseButtonOnClick)
-		CloseButton:SetScript('OnEnter', CloseButtonOnEnter)
-		CloseButton:SetScript('OnLeave', CloseButtonOnLeave)
-
-		frame.CloseButton = CloseButton
-	end
-end
 
 local API = {
 	Kill = Kill,
@@ -551,22 +413,16 @@ local API = {
 	Point = Point,
 	Width = Width,
 	Height = Height,
-	PointXY = PointXY,
-	GrabPoint = GrabPoint,
-	NudgePoint = NudgePoint,
 	SetOutside = SetOutside,
 	SetInside = SetInside,
 	SetTemplate = SetTemplate,
 	CreateBackdrop = CreateBackdrop,
-	CreateShadow = CreateShadow,
 	FontTemplate = FontTemplate,
 	StripTextures = StripTextures,
 	StripTexts = StripTexts,
 	StyleButton = StyleButton,
 	OffsetFrameLevel = OffsetFrameLevel,
-	CreateCloseButton = CreateCloseButton,
 	SetTexCoords = SetTexCoords,
-	GetChild = GetChild,
 }
 
 local function AddAPI(object)

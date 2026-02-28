@@ -3733,7 +3733,7 @@ function CH:VoiceOverlay(event, ...)
 		if frame and channelID == frame.channelID then
 			frame.StatusBar:SetValue(volume)
 
-			frame.StatusBar:SetStatusBarColor(E:ColorGradient(volume, 1, 0, 0, 1, 1, 0, 0, 1, 0))
+			frame.StatusBar:SetStatusBarColor(ColorGradient(volume, 1, 0, 0, 1, 1, 0, 0, 1, 0))
 		end
 	--[[elseif event == 'VOICE_CHAT_CHANNEL_TRANSMIT_CHANGED' then
 		local channelID, isTransmitting = ...
