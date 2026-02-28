@@ -66,7 +66,6 @@ E.media.normTex = E.ClearTexture -- TODO: replace with real texture after LSM fe
 E.media.glossTex = E.ClearTexture -- TODO: replace with real texture after LSM fetch
 E.frames = {}
 E.unitFrameElements = {}
-E.statusBars = {}
 -- ElvUIChat: These tables are now initialized in init.lua (early init before General files load)
 -- E.RegisteredModules, E.RegisteredInitialModules, E.valueColorUpdateFuncs, E.TexCoords
 
@@ -289,14 +288,6 @@ function E:UpdateFrameTemplates()
 			E.unitFrameElements[frame] = nil
 		end
 	end
-end
-
-function E:RegisterStatusBar(statusBar)
-	E.statusBars[statusBar] = true
-end
-
-function E:UnregisterStatusBar(statusBar)
-	E.statusBars[statusBar] = nil
 end
 
 do
@@ -528,17 +519,6 @@ do
 		end
 	end)
 
-	function E:HasFunctionForObject(event, object, func)
-		if not (event and object and func) then
-			E:Print('Error. Usage: HasFunctionForObject(event, object, func)')
-			return
-		end
-
-		local objs = eventTable[event]
-		local funcs = objs and objs[object]
-		return funcs and tContains(funcs, func)
-	end
-
 	function E:IsEventRegisteredForObject(event, object)
 		if not (event and object) then
 			E:Print('Error. Usage: IsEventRegisteredForObject(event, object)')
@@ -612,18 +592,6 @@ do
 		end
 	end
 
-	function E:UnregisterAllEventsForObject(object, func)
-		if not (object and func) then
-			E:Print('Error. Usage: UnregisterAllEventsForObject(object, func)')
-			return
-		end
-
-		for event in pairs(eventTable) do
-			if E:IsEventRegisteredForObject(event, object) then
-				E:UnregisterEventForObject(event, object, func)
-			end
-		end
-	end
 end
 
 
@@ -659,10 +627,6 @@ function E:CallLoadedModule(obj, silent, object, index)
 	end
 end
 
-function E:RegisterInitialModule(name, func)
-	E.RegisteredInitialModules[#E.RegisteredInitialModules + 1] = { name = name, func = func }
-end
-
 do
 	local loaded = {}
 	function E:RegisterModule(name, func)
@@ -677,49 +641,12 @@ do
 	end
 end
 
-function E:InitializeInitialModules()
-	for index, object in ipairs(E.RegisteredInitialModules) do
-		E:CallLoadedModule(object, true, E.RegisteredInitialModules, index)
-	end
-end
-
 function E:InitializeModules()
 	for index, object in ipairs(E.RegisteredModules) do
 		E:CallLoadedModule(object, true, E.RegisteredModules, index)
 	end
 end
 
-
-do
-	-- Shamelessly taken from AceDB-3.0 and stripped down by Simpy
-	function E:CopyDefaults(dest, src)
-		for k, v in pairs(src) do
-			if type(v) == 'table' then
-				if not rawget(dest, k) then rawset(dest, k, {}) end
-				if type(dest[k]) == 'table' then E:CopyDefaults(dest[k], v) end
-			elseif rawget(dest, k) == nil then
-				rawset(dest, k, v)
-			end
-		end
-
-		return dest
-	end
-
-	function E:RemoveDefaults(db, defaults)
-		setmetatable(db, nil)
-
-		for k, v in pairs(defaults) do
-			if type(v) == 'table' and type(db[k]) == 'table' then
-				E:RemoveDefaults(db[k], v)
-				if next(db[k]) == nil then db[k] = nil end
-			elseif db[k] == defaults[k] then
-				db[k] = nil
-			end
-		end
-
-		return db
-	end
-end
 
 function E:LoadCommands()
 	E:RegisterChatCommand('elvuichat', 'ToggleOptions')
