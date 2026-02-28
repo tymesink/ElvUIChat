@@ -4,24 +4,15 @@ local E, L, V, P, G = unpack(ElvUIChat)
 
 local _G = _G
 local tonumber, pairs, ipairs, unpack, tostring = tonumber, pairs, ipairs, unpack, tostring
-local strjoin, wipe, sort, tinsert, tremove, tContains = strjoin, wipe, sort, tinsert, tremove, tContains
-local format, strfind, strrep, strlen, sub, gsub = format, strfind, strrep, strlen, strsub, gsub
+local strjoin, wipe, tinsert, tremove, tContains = strjoin, wipe, tinsert, tremove, tContains
+local format, gsub = format, gsub
 local assert, type, pcall, xpcall, next, print = assert, type, pcall, xpcall, next, print
 local rawget, rawset, setmetatable = rawget, rawset, setmetatable
 
 local Mixin = Mixin
 local ColorMixin = ColorMixin
 local CreateFrame = CreateFrame
-local GetBindingKey = GetBindingKey
-local GetCurrentBindingSet = GetCurrentBindingSet
-local GetNumGroupMembers = GetNumGroupMembers
-local InCombatLockdown = InCombatLockdown
-local IsInGroup = IsInGroup
-local IsInGuild = IsInGuild
-local IsInRaid = IsInRaid
 local ReloadUI = ReloadUI
-local SaveBindings = SaveBindings
-local SetBinding = SetBinding
 local UIParent = UIParent
 local UnitFactionGroup = UnitFactionGroup
 
@@ -30,10 +21,6 @@ local PlayerGetTimerunningSeasonID = PlayerGetTimerunningSeasonID
 
 local DisableAddOn = C_AddOns.DisableAddOn
 local GetCVarBool = C_CVar.GetCVarBool
-
-local LE_PARTY_CATEGORY_HOME = LE_PARTY_CATEGORY_HOME
-local LE_PARTY_CATEGORY_INSTANCE = LE_PARTY_CATEGORY_INSTANCE
-local C_ChatInfo_SendAddonMessage = C_ChatInfo.SendAddonMessage
 
 -- GLOBALS: ElvUIChatCharacterDB
 
@@ -56,17 +43,12 @@ E.mylevel = UnitLevel('player')
 E.myname = UnitName('player')
 E.myrealm = GetRealmName()
 E.mynameRealm = format('%s - %s', E.myname, E.myrealm) -- contains spaces/dashes in realm (for profile keys)
-E.expansionLevel = GetExpansionLevel()
-E.expansionLevelMax = GetMaxLevelForExpansionLevel(E.expansionLevel)
 E.wowbuild = tonumber(E.wowbuild)
 E.physicalWidth, E.physicalHeight = GetPhysicalScreenSize()
 E.screenWidth, E.screenHeight = GetScreenWidth(), GetScreenHeight()
 E.resolution = format('%dx%d', E.physicalWidth, E.physicalHeight)
 E.perfect = 768 / E.physicalHeight
 E.allowRoles = true -- Retail-only
-E.NewSign = [[|TInterface\OptionsFrame\UI-OptionsFrame-NewFeatureIcon:14:14|t]]
-E.NewSignNoWhatsNew = [[|TInterface\OptionsFrame\UI-OptionsFrame-NewFeatureIcon:14:14:0:0|t]]
-E.TexturePath = [[Interface\AddOns\ElvUI\Media\Textures\]] -- for plugins?
 E.ClearTexture = 0 -- used to clear: Set (Normal, Disabled, Checked, Pushed, Highlight) Texture
 
 -- ElvUIChat: We don't have oUF, skip these
@@ -88,90 +70,19 @@ E.unitFrameElements = {}
 E.statusBars = {}
 -- ElvUIChat: These tables are now initialized in init.lua (early init before General files load)
 -- E.RegisteredModules, E.RegisteredInitialModules, E.valueColorUpdateFuncs, E.TexCoords
-E.texts = {}
-E.snapBars = {}
-E.CreditsList = {}
-E.ReverseTimer = {} -- Spells that we want to show the duration backwards (oUF_RaidDebuffs, ???)
-
--- ElvUIChat: Movers completely removed - chat doesn't need manual positioning
-
-E.InversePoints = {
-	BOTTOM = 'TOP',
-	BOTTOMLEFT = 'TOPLEFT',
-	BOTTOMRIGHT = 'TOPRIGHT',
-	CENTER = 'CENTER',
-	LEFT = 'RIGHT',
-	RIGHT = 'LEFT',
-	TOP = 'BOTTOM',
-	TOPLEFT = 'BOTTOMLEFT',
-	TOPRIGHT = 'BOTTOMRIGHT'
-}
-
-E.InverseAnchors = {
-	BOTTOM = 'TOP',
-	BOTTOMLEFT = 'TOPRIGHT',
-	BOTTOMRIGHT = 'TOPLEFT',
-	CENTER = 'CENTER',
-	LEFT = 'RIGHT',
-	RIGHT = 'LEFT',
-	TOP = 'BOTTOM',
-	TOPLEFT = 'BOTTOMRIGHT',
-	TOPRIGHT = 'BOTTOMLEFT'
-}
 
 -- Workaround for people wanting to use white and it reverting to their class color.
 E.PriestColors = { r = 0.99, g = 0.99, b = 0.99, colorStr = 'fffcfcfc' }
 
--- Socket Type info from 11.2.0 (63003): Interface\AddOns\Blizzard_ItemSocketing\Blizzard_ItemSocketingUI.lua
-E.GemTypeInfo = {
-	Yellow			= { r = 0.97, g = 0.82, b = 0.29, a = 1 },
-	Red				= { r = 1.00, g = 0.47, b = 0.47, a = 1 },
-	Blue			= { r = 0.47, g = 0.67, b = 1.00, a = 1 },
-	Hydraulic		= { r = 1.00, g = 1.00, b = 1.00, a = 1 },
-	Cogwheel		= { r = 1.00, g = 1.00, b = 1.00, a = 1 },
-	Meta			= { r = 1.00, g = 1.00, b = 1.00, a = 1 },
-	Prismatic		= { r = 1.00, g = 1.00, b = 1.00, a = 1 },
-	PunchcardRed	= { r = 1.00, g = 0.47, b = 0.47, a = 1 },
-	PunchcardYellow	= { r = 0.97, g = 0.82, b = 0.29, a = 1 },
-	PunchcardBlue	= { r = 0.47, g = 0.67, b = 1.00, a = 1 },
-	Domination		= { r = 0.24, g = 0.50, b = 0.70, a = 1 },
-	Cypher			= { r = 1.00, g = 0.80, b = 0.00, a = 1 },
-	Tinker			= { r = 1.00, g = 0.47, b = 0.47, a = 1 },
-	Primordial		= { r = 1.00, g = 0.00, b = 1.00, a = 1 },
-	Fragrance		= { r = 1.00, g = 1.00, b = 1.00, a = 1 },
-	SingingThunder	= { r = 0.97, g = 0.82, b = 0.29, a = 1 },
-	SingingSea		= { r = 0.47, g = 0.67, b = 1.00, a = 1 },
-	SingingWind		= { r = 1.00, g = 0.47, b = 0.47, a = 1 },
-	Fiber			= { r = 0.90, g = 0.80, b = 0.50, a = 1 },
-}
-
-E.Curves = { -- Midnight Color Curves (nil values created later)
-	Duration = nil, -- duration object for SetTimeFromStart
-	Float = {
-		Alpha = nil, -- float for hiding at Zero
-		Desaturation = nil, -- float curve for SetDesaturation
-	},
-	Color = {
-		Default = nil, -- simple red, yellow, green curve for various places
-		Dispel = nil, -- color curve for IsDispellableByMe; updated by ListUpdated in LibDispel
-		Auras = { -- color curves created and updated by UpdateAuraCurves
-			auras = false,	-- these all
-			buffs = false,	-- stay false
-			debuffs = false	-- on classics
-		}
-	}
-}
 
 -- Chat-only: no custom parent needed; use the native UIParent while keeping the reference for callers.
 E.UIParent = UIParent
 _G.ElvUIParent = UIParent
-E.snapBars[#E.snapBars + 1] = E.UIParent
 
 E.HiddenFrame = CreateFrame('Frame', nil, UIParent)
 E.HiddenFrame:SetPoint('BOTTOM')
 E.HiddenFrame:SetSize(1,1)
 E.HiddenFrame:Hide()
-E.DEFAULT_FILTER = {}
 
 do
 	local a1,a2 = '','[%s%-]'
@@ -266,17 +177,6 @@ function E:VerifyColorTable(data)
 	if not data.a or (data.a > 1 or data.a < 0) then data.a = 1 end
 end
 
-function E:NewColorTable(r, g, b, a)
-	-- this function doesnt update the color to a mixin (unlike SetColorTable)
-	-- that makes it safe to use it for creating new colors for the db
-	-- dont upgrade the table to a mixin here
-
-	local data = { r = r, g = g, b = b, a = a }
-
-	E:VerifyColorTable(data)
-
-	return data
-end
 
 function E:UpdateColorTable(data)
 	E:VerifyColorTable(data)
@@ -362,19 +262,6 @@ function E:UpdateMedia(mediaType)
 	end
 end
 
-function E:GeneralMedia_ApplyToAll()
-	local font = E.db.general.font
-	local fontSize = E.db.general.fontSize
-
-
-	-- Only chat module exists
-	E.db.chat.font = font
-	E.db.chat.fontSize = fontSize
-	E.db.chat.tabFont = font
-	E.db.chat.tabFontSize = fontSize
-
-	E:StaggeredUpdateAll()
-end
 
 function E:ValueFuncCall()
 	local hex, r, g, b = E.media.hexvaluecolor, unpack(E.media.rgbvaluecolor)
@@ -405,93 +292,12 @@ function E:UpdateFrameTemplates()
 	end
 end
 
-function E:UpdateBorderColors()
-	local r, g, b = unpack(E.media.bordercolor)
-	for frame in pairs(E.frames) do
-		if frame and frame.template and not frame:IsForbidden() then
-			if not (frame.ignoreUpdates or frame.forcedBorderColors) and (frame.template == 'Default' or frame.template == 'Transparent') then
-				frame:SetBackdropBorderColor(r, g, b)
-			end
-		else
-			E.frames[frame] = nil
-		end
-	end
-
-	local r2, g2, b2 = unpack(E.media.unitframeBorderColor)
-	for frame in pairs(E.unitFrameElements) do
-		if frame and frame.template and not frame:IsForbidden() then
-			if not (frame.ignoreUpdates or frame.forcedBorderColors) and (frame.template == 'Default' or frame.template == 'Transparent') then
-				frame:SetBackdropBorderColor(r2, g2, b2)
-			end
-		else
-			E.unitFrameElements[frame] = nil
-		end
-	end
-end
-
-function E:UpdateBackdropColors()
-	local r, g, b, a = unpack(E.media.backdropcolor)
-	local r2, g2, b2, a2 = unpack(E.media.backdropfadecolor)
-
-	for frame in pairs(E.frames) do
-		if frame and frame.template and not frame:IsForbidden() then
-			if not frame.ignoreUpdates then
-				if frame.callbackBackdropColor then
-					frame:callbackBackdropColor()
-				elseif frame.template == 'Default' then
-					frame:SetBackdropColor(r, g, b, frame.customBackdropAlpha or a)
-				elseif frame.template == 'Transparent' then
-					frame:SetBackdropColor(r2, g2, b2, frame.customBackdropAlpha or a2)
-				end
-			end
-		else
-			E.frames[frame] = nil
-		end
-	end
-
-	for frame in pairs(E.unitFrameElements) do
-		if frame and frame.template and not frame:IsForbidden() then
-			if not frame.ignoreUpdates then
-				if frame.callbackBackdropColor then
-					frame:callbackBackdropColor()
-				elseif frame.template == 'Default' then
-					frame:SetBackdropColor(r, g, b, frame.customBackdropAlpha or a)
-				elseif frame.template == 'Transparent' then
-					frame:SetBackdropColor(r2, g2, b2, frame.customBackdropAlpha or a2)
-				end
-			end
-		else
-			E.unitFrameElements[frame] = nil
-		end
-	end
-end
-
-function E:UpdateFontTemplates()
-	for text in pairs(E.texts) do
-		if text then
-			text:FontTemplate(text.font, text.fontSize, text.fontStyle, true)
-		else
-			E.texts[text] = nil
-		end
-	end
-end
-
 function E:RegisterStatusBar(statusBar)
 	E.statusBars[statusBar] = true
 end
 
 function E:UnregisterStatusBar(statusBar)
 	E.statusBars[statusBar] = nil
-end
-
-function E:UpdateStatusBars()
-	for statusBar in pairs(E.statusBars) do
-		if statusBar and statusBar:IsObjectType('StatusBar') then
-			statusBar:SetStatusBarTexture(E.media.normTex)
-		elseif statusBar and statusBar:IsObjectType('Texture') then
-			statusBar:SetTexture(E.media.normTex)
-		end
-	end
 end
 
 do
@@ -547,13 +353,6 @@ do
 	}
 
 	E.INCOMPATIBLE_ADDONS = ADDONS -- let addons have the ability to alter this list to trigger our popup if they want
-	function E:AddIncompatible(module, addonName)
-		if ADDONS[module] then
-			tinsert(ADDONS[module], addonName)
-		else
-			print(module, 'is not in the incompatibility list.')
-		end
-	end
 
 	function E:CheckIncompatible()
 		if E.global.ignoreIncompatible then return end
@@ -583,276 +382,6 @@ function E:CopyTable(current, default, merge)
 	return current
 end
 
-function E:RemoveEmptySubTables(tbl)
-	if type(tbl) ~= 'table' then
-		E:Print('Bad argument #1 to \'RemoveEmptySubTables\' (table expected)')
-		return
-	end
-
-	for k, v in pairs(tbl) do
-		if type(v) == 'table' then
-			if next(v) == nil then
-				tbl[k] = nil
-			else
-				E:RemoveEmptySubTables(v)
-			end
-		end
-	end
-end
-
---Compare 2 tables and remove duplicate key/value pairs
---param cleanTable : table you want cleaned
---param checkTable : table you want to check against.
---param generatedKeys : table defined in `Distributor.lua` to allow user generated tables to be exported (customTexts, customCurrencies, etc).
---return : a copy of cleanTable with duplicate key/value pairs removed
-function E:RemoveTableDuplicates(cleanTable, checkTable, generatedKeys)
-	if type(cleanTable) ~= 'table' then
-		E:Print('Bad argument #1 to \'RemoveTableDuplicates\' (table expected)')
-		return
-	end
-	if type(checkTable) ~= 'table' then
-		E:Print('Bad argument #2 to \'RemoveTableDuplicates\' (table expected)')
-		return
-	end
-
-	local rtdCleaned = {}
-	local keyed = type(generatedKeys) == 'table'
-	for option, value in pairs(cleanTable) do
-		local default = checkTable[option]
-		local genTable, genOption
-		if keyed then
-			genTable = generatedKeys[option]
-		else
-			genOption = generatedKeys
-		end
-
-		-- we only want to add settings which are existing in the default table, unless it's allowed by generatedKeys
-		if default ~= nil or (genTable or genOption ~= nil) then
-			if type(value) == 'table' and type(default) == 'table' then
-				if genOption ~= nil then
-					rtdCleaned[option] = E:RemoveTableDuplicates(value, default, genOption)
-				else
-					rtdCleaned[option] = E:RemoveTableDuplicates(value, default, genTable or nil)
-				end
-			elseif cleanTable[option] ~= default then
-				-- add unique data to our clean table
-				rtdCleaned[option] = value
-			end
-		end
-	end
-
-	--Clean out empty sub-tables
-	E:RemoveEmptySubTables(rtdCleaned)
-
-	return rtdCleaned
-end
-
---Compare 2 tables and remove blacklisted key/value pairs
---param cleanTable : table you want cleaned
---param blacklistTable : table you want to check against.
---return : a copy of cleanTable with blacklisted key/value pairs removed
-function E:FilterTableFromBlacklist(cleanTable, blacklistTable)
-	if type(cleanTable) ~= 'table' then
-		E:Print('Bad argument #1 to \'FilterTableFromBlacklist\' (table expected)')
-		return
-	end
-	if type(blacklistTable) ~= 'table' then
-		E:Print('Bad argument #2 to \'FilterTableFromBlacklist\' (table expected)')
-		return
-	end
-
-	local tfbCleaned = {}
-	for option, value in pairs(cleanTable) do
-		if type(value) == 'table' and blacklistTable[option] and type(blacklistTable[option]) == 'table' then
-			tfbCleaned[option] = E:FilterTableFromBlacklist(value, blacklistTable[option])
-		else
-			-- Filter out blacklisted keys
-			if blacklistTable[option] ~= true then
-				tfbCleaned[option] = value
-			end
-		end
-	end
-
-	--Clean out empty sub-tables
-	E:RemoveEmptySubTables(tfbCleaned)
-
-	return tfbCleaned
-end
-
-local function KeySort(a, b)
-	local A, B = type(a), type(b)
-
-	if A == B then
-		if A == 'number' or A == 'string' then
-			return a < b
-		elseif A == 'boolean' then
-			return (a and 1 or 0) > (b and 1 or 0)
-		end
-	end
-
-	return A < B
-end
-
-do	--The code in this function is from WeakAuras, credit goes to Mirrored and the WeakAuras Team
-	--Code slightly modified by Simpy, sorting from @sighol
-	local function Recurse(tbl, level, ret)
-		local tkeys = {}
-		for i in pairs(tbl) do tinsert(tkeys, i) end
-		sort(tkeys, KeySort)
-
-		for _, i in ipairs(tkeys) do
-			local v = tbl[i]
-
-			ret = ret..strrep('    ', level)..'['
-			if type(i) == 'string' then ret = ret..'"'..i..'"' else ret = ret..i end
-			ret = ret..'] = '
-
-			if type(v) == 'number' then
-				ret = ret..v..',\n'
-			elseif type(v) == 'string' then
-				ret = ret..'"'..v:gsub('\\', '\\\\'):gsub('\n', '\\n'):gsub('"', '\\"'):gsub('\124', '\124\124')..'",\n'
-			elseif type(v) == 'boolean' then
-				if v then ret = ret..'true,\n' else ret = ret..'false,\n' end
-			elseif type(v) == 'table' then
-				ret = ret..'{\n'
-				ret = Recurse(v, level + 1, ret)
-				ret = ret..strrep('    ', level)..'},\n'
-			else
-				ret = ret..'"'..tostring(v)..'",\n'
-			end
-		end
-
-		return ret
-	end
-
-	function E:TableToLuaString(inTable)
-		if type(inTable) ~= 'table' then
-			E:Print('Invalid argument #1 to E:TableToLuaString (table expected)')
-			return
-		end
-
-		local ret = '{\n'
-		if inTable then ret = Recurse(inTable, 1, ret) end
-		ret = ret..'}'
-
-		return ret
-	end
-end
-
-do	--The code in this function is from WeakAuras, credit goes to Mirrored and the WeakAuras Team
-	--Code slightly modified by Simpy, sorting from @sighol
-	local lineStructureTable, profileFormat = {}, {
-		profile = 'E.db',
-		private = 'E.private',
-		global = 'E.global',
-		filters = 'E.global'
-	}
-
-	local function BuildLineStructure(str) -- str is profileText
-		for _, v in ipairs(lineStructureTable) do
-			if type(v) == 'string' then
-				str = str..'["'..v..'"]'
-			else
-				str = str..'['..v..']'
-			end
-		end
-
-		return str
-	end
-
-	local sameLine
-	local function Recurse(tbl, ret, profileText)
-		local tkeys = {}
-		for i in pairs(tbl) do tinsert(tkeys, i) end
-		sort(tkeys, KeySort)
-
-		local lineStructure = BuildLineStructure(profileText)
-		for _, k in ipairs(tkeys) do
-			local v = tbl[k]
-
-			if not sameLine then
-				ret = ret..lineStructure
-			end
-
-			ret = ret..'['
-
-			if type(k) == 'string' then
-				ret = ret..'"'..k..'"'
-			else
-				ret = ret..k
-			end
-
-			if type(v) == 'table' then
-				tinsert(lineStructureTable, k)
-				sameLine = true
-				ret = ret..']'
-				ret = Recurse(v, ret, profileText)
-			else
-				sameLine = false
-				ret = ret..'] = '
-
-				if type(v) == 'number' then
-					ret = ret..v..'\n'
-				elseif type(v) == 'string' then
-					ret = ret..'"'..v:gsub('\\', '\\\\'):gsub('\n', '\\n'):gsub('"', '\\"'):gsub('\124', '\124\124')..'"\n'
-				elseif type(v) == 'boolean' then
-					if v then
-						ret = ret..'true\n'
-					else
-						ret = ret..'false\n'
-					end
-				else
-					ret = ret..'"'..tostring(v)..'"\n'
-				end
-			end
-		end
-
-		tremove(lineStructureTable)
-
-		return ret
-	end
-
-	function E:ProfileTableToPluginFormat(inTable, profileType)
-		local profileText = profileFormat[profileType]
-		if not profileText then return end
-
-		wipe(lineStructureTable)
-
-		local ret = ''
-		if inTable and profileType then
-			sameLine = false
-			ret = Recurse(inTable, ret, profileText)
-		end
-
-		return ret
-	end
-end
-
-do	--Split string by multi-character delimiter (the strsplit / string.split function provided by WoW doesn't allow multi-character delimiter)
-	local splitTable = {}
-	function E:SplitString(str, delim)
-		assert(type (delim) == 'string' and strlen(delim) > 0, 'bad delimiter')
-
-		local start = 1
-		wipe(splitTable) -- results table
-
-		-- find each instance of a string followed by the delimiter
-		while true do
-			local pos = strfind(str, delim, start, true) -- plain find
-			if not pos then break end
-
-			tinsert(splitTable, sub(str, start, pos - 1))
-			start = pos + strlen(delim)
-		end -- while
-
-		-- insert final one (after last delimiter)
-		tinsert(splitTable, sub(str, start))
-
-		return unpack(splitTable)
-	end
-end
-
-
 function E:UpdateStart(skipCallback, skipUpdateDB)
 	if not skipUpdateDB then
 		E:UpdateDB()
@@ -865,30 +394,6 @@ function E:UpdateStart(skipCallback, skipUpdateDB)
 	end
 end
 
-do -- BFA Convert, deprecated..
-	local function ConvertAurawatch(spell)
-		if spell.sizeOverride then spell.sizeOverride = nil end
-		if spell.size then spell.size = nil end
-
-		if not spell.sizeOffset then
-			spell.sizeOffset = 0
-		end
-
-		if spell.styleOverride then
-			spell.style = spell.styleOverride
-			spell.styleOverride = nil
-		elseif not spell.style then
-			spell.style = 'coloredIcon'
-		end
-	end
-
-	local ttModSwap
-	do -- tooltip convert
-		local swap = {ALL = 'HIDE', NONE = 'SHOW'}
-		ttModSwap = function(val) return swap[val] end
-	end
-
-end
 
 -- ElvUIChat: Simplified SetupDB for chat-only modules
 function E:SetupDB()
@@ -971,15 +476,9 @@ do
 	local staggerTable = {}
 	local function CallStaggeredUpdate()
 		local nextUpdate = staggerTable[1]
-		local nextDelay
 		if nextUpdate then
 			tremove(staggerTable, 1)
-
-			if nextUpdate == 'UpdateNamePlates' or nextUpdate == 'UpdateBags' then
-				nextDelay = 0.05
-			end
-
-			E:Delay(nextDelay or staggerDelay, E[nextUpdate])
+			E:Delay(staggerDelay, E[nextUpdate])
 		end
 	end
 	E:RegisterCallback('StaggeredUpdate', CallStaggeredUpdate)
@@ -992,7 +491,6 @@ do
 
 		if (not event or event == 'OnProfileChanged' or event == 'OnProfileCopied') and not E.staggerUpdateRunning then
 
-			tinsert(staggerTable, 'UpdateMisc')
 			tinsert(staggerTable, 'UpdateEnd')
 			--Stagger updates
 			E.staggerUpdateRunning = true
@@ -1012,7 +510,6 @@ function E:UpdateAll(doUpdates)
 		if Chat.Initialized then
 			E:UpdateChat()
 		end
-		E:UpdateMisc()
 		E:UpdateEnd()
 	end
 end
@@ -1271,21 +768,10 @@ function E:Initialize()
 		E:Tutorials()
 	end
 
-	if E.db.general.tagUpdateRate and (E.db.general.tagUpdateRate ~= P.general.tagUpdateRate) then
-		E:TagUpdateRate(E.db.general.tagUpdateRate)
-	end
-
-	if E.db.general.smoothingAmount and (E.db.general.smoothingAmount ~= P.general.smoothingAmount) then
-		E:SetSmoothingAmount(E.db.general.smoothingAmount)
-	end
-
 	if not E.private.install_complete then
 		-- ElvUIChat: Simple install - just mark as complete, chat works with defaults
 		E.private.install_complete = E.version
 	end
-
-	-- TODO: skip UPDATE_REQUEST popup in chat-only build
-	E.updateRequestTriggered = false
 
 	if GetCVarBool('taintLog') then
 		E:StaticPopup_Show('TAINT_LOG')
