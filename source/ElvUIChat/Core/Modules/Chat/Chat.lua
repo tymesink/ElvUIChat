@@ -1553,22 +1553,10 @@ function CH:PositionChat(chat)
 		chat.FontStringContainer:SetPoint('BOTTOMRIGHT', 3, -3)
 	end
 
-	local BASE_OFFSET = 32
 	if chat == CH.LeftChatWindow then
-		local leftTab = _G.LeftChatTab
-		local LOG_OFFSET = (chat:GetID() == 2 and leftTab and leftTab:GetHeight() + 4) or 0
-
-		-- Preserve user anchoring (Edit Mode); only adjust size
-		chat:SetSize(CH.db.panelWidth - 10, CH.db.panelHeight - BASE_OFFSET - LOG_OFFSET)
-
+		-- No SetSize: let Blizzard Edit Mode control the chat window dimensions
 		CH:ShowBackground(chat.Background, false)
-	elseif chat == CH.RightChatWindow and _G.RightChatPanel then -- TODO: skip when right panel is removed; revisit if we restore it
-		local leftTab = _G.LeftChatTab
-		local LOG_OFFSET = (chat:GetID() == 2 and leftTab and leftTab:GetHeight() + 4) or 0
-
-		-- Preserve user anchoring (Edit Mode); only adjust size
-		chat:SetSize((CH.db.separateSizes and CH.db.panelWidthRight or CH.db.panelWidth) - 10, (CH.db.separateSizes and CH.db.panelHeightRight or CH.db.panelHeight) - BASE_OFFSET - LOG_OFFSET)
-
+	elseif chat == CH.RightChatWindow and _G.RightChatPanel then
 		CH:ShowBackground(chat.Background, false)
 	else -- show if: not docked, or ChatFrame1, or attached to ChatFrame1
 		CH:ShowBackground(chat.Background, CH:IsUndocked(chat, docker))
