@@ -1293,8 +1293,8 @@ function CH:UpdateEditboxAnchors(cvar, value)
 	local offsetBelow = classic and (belowInside and 1 or 0) or -5
 	local offsetAbove = classic and (aboveInside and -1 or 0) or 2
 
-	local belowTopY = classic and (showLeftPanel and 1 or 0) or -2
-	local belowBottomY = classic and (showLeftPanel and -1 or 0) or -2
+	local belowTopY = classic and (showLeftPanel and 1 or 0) or 0
+	local belowBottomY = classic and (showLeftPanel and -1 or 0) or 0
 	local belowTopX = offsetBelow + (belowInside and panel or 0)
 	local belowBottomX = offsetBelow + (belowInside and 0 or -panel)
 
@@ -1367,6 +1367,11 @@ function CH:FindChatWindows()
 	end
 
 	-- none or one was found
+	-- Fallback for chat-only build: no LeftChatPanel to detect overlap, so assign primary docker
+	if not left then
+		local primaryDock = _G.GeneralDockManager and _G.GeneralDockManager.primary
+		if primaryDock then left = primaryDock end
+	end
 	return left, right
 end
 
