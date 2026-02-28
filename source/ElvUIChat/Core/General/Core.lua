@@ -91,8 +91,6 @@ E.statusBars = {}
 -- E.RegisteredModules, E.RegisteredInitialModules, E.valueColorUpdateFuncs, E.TexCoords
 E.texts = {}
 E.snapBars = {}
-E.FrameLocks = {}
-E.VehicleLocks = {}
 E.CreditsList = {}
 E.ReverseTimer = {} -- Spells that we want to show the duration backwards (oUF_RaidDebuffs, ???)
 
