@@ -3,8 +3,6 @@ local E, L, V, P, G = unpack(ElvUIChat)
 local CopyTable = CopyTable -- Our function doesn't exist yet.
 local next = next
 
-P.gridSize = 64
-P.layoutSetting = 'tank'
 P.hideTutorial = true
 P.dbConverted = nil -- use this to let DBConversions run once per profile
 
@@ -16,8 +14,6 @@ P.general = {
 	stickyFrames = false,
 	loginmessage = true,
 	questXPPercent = false,
-	afk = true,
-	afkChat = true,
 	numberPrefixStyle = 'ENGLISH',
 	decimalLength = 1,
 	fontSize = 12,
@@ -86,7 +82,6 @@ P.chat = {
 	panelBackdrop = 'LEFT',
 	panelTabBackdrop = false,
 	panelTabTransparency = false,
-	LeftChatDataPanelAnchor = 'BELOW_CHAT',
 	editBoxPosition = 'BELOW_CHAT',
 	fadeUndockedTabs = false,
 	fadeTabsNoBackdrop = true,
@@ -115,24 +110,3 @@ P.chat = {
 	voicePanelAlpha = 0.25
 }
 
---Datatexts
-P.datatexts = {
-	font = 'PT Sans Narrow',
-	fontSize = 12,
-	fontOutline = 'NONE',
-	wordWrap = false,
-	panels = {
-		LeftChatDataPanel = {
-			enable = false,
-			backdrop = true,
-			border = true,
-			panelTransparency = false,
-			'Talent/Loot Specialization', -- Retail
-			'Durability',
-			'Missions' -- Retail
-		}
-	},
-	battleground = false,
-	noCombatClick = false,
-	noCombatHover = false,
-}

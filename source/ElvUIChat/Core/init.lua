@@ -50,7 +50,6 @@ E.Skins = E:NewModule('Skins','AceTimer-3.0','AceHook-3.0','AceEvent-3.0')
 
 E.InfoColor = '|cff1784d1' -- blue
 E.InfoColor2 = '|cff9b9b9b' -- silver
-E.twoPixelsPlease = false -- changing this option is not supported! :P
 
 do -- Retail Only (ElvUIChat)
 	E.Retail = true
@@ -272,9 +271,9 @@ function E:OnInitialize()
 	E.ScanTooltip = CreateFrame('GameTooltip', 'ElvUIChat_ScanTooltip', WorldFrame, 'GameTooltipTemplate')
 	E.EasyMenu = CreateFrame('Frame', 'ElvUIChat_EasyMenu', UIParent, 'UIDropDownMenuTemplate')
 
-	E.PixelMode = E.twoPixelsPlease or E.private.general.pixelPerfect -- keep this over `UIScale`
-	E.Border = (E.PixelMode and not E.twoPixelsPlease) and 1 or 2
-	E.Spacing = E.PixelMode and 0 or 1
+	E.PixelMode = false
+	E.Border = 2
+	E.Spacing = 1
 
 	E.myClassColor = E:ClassColor(E.myclass, true)
 	E.loadedtime = GetTime()

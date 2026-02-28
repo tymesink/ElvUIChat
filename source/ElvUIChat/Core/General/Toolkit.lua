@@ -192,7 +192,7 @@ local function SetTemplate(frame, template, glossTex, ignoreUpdates, forcePixelM
 	if template == 'NoBackdrop' then
 		frame:SetBackdrop()
 	else
-		local edgeSize = E.twoPixelsPlease and 2 or 1
+		local edgeSize = 1
 
 		frame:SetBackdrop({
 			edgeFile = E.media.blankTex,
@@ -260,7 +260,7 @@ local function CreateBackdrop(frame, template, glossTex, ignoreUpdates, forcePix
 		end
 	else
 		if forcePixelMode then
-			backdrop:SetOutside(frame, E.twoPixelsPlease and 2 or 1, E.twoPixelsPlease and 2 or 1)
+			backdrop:SetOutside(frame, 1, 1)
 		else
 			backdrop:SetOutside(frame, E.Border, E.Border)
 		end

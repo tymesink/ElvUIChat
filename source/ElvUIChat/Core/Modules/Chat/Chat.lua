@@ -1292,7 +1292,6 @@ function CH:UpdateEditboxAnchors(cvar, value)
 	local classic = value == 'classic'
 	local panel = 22
 
-	local showLeftPanel = E.db.datatexts and E.db.datatexts.panels and E.db.datatexts.panels.LeftChatDataPanel and E.db.datatexts.panels.LeftChatDataPanel.enable
 	local aboveInside = CH.db.editBoxPosition == 'ABOVE_CHAT_INSIDE'
 	local belowInside = CH.db.editBoxPosition == 'BELOW_CHAT_INSIDE'
 	local below = CH.db.editBoxPosition == 'BELOW_CHAT'
@@ -1300,8 +1299,8 @@ function CH:UpdateEditboxAnchors(cvar, value)
 	local offsetBelow = classic and (belowInside and 1 or 0) or -5
 	local offsetAbove = classic and (aboveInside and -1 or 0) or 2
 
-	local belowTopY = classic and (showLeftPanel and 1 or 0) or 0
-	local belowBottomY = classic and (showLeftPanel and -1 or 0) or 0
+	local belowTopY = 0
+	local belowBottomY = 0
 	local belowTopX = offsetBelow + (belowInside and panel or 0)
 	local belowBottomX = offsetBelow + (belowInside and 0 or -panel)
 
@@ -1441,10 +1440,9 @@ end
 
 function CH:RefreshToggleButtons()
 	local toggle = _G.LeftChatToggleButton
-	local showLeft = E.db.datatexts and E.db.datatexts.panels and E.db.datatexts.panels.LeftChatDataPanel and E.db.datatexts.panels.LeftChatDataPanel.enable
 	if toggle then
 		toggle:SetAlpha(E.db.LeftChatPanelFaded and CH.db.fadeChatToggles and 0 or 1)
-		toggle:SetShown(not CH.db.hideChatToggles and showLeft)
+		toggle:SetShown(false)
 	end
 end
 
