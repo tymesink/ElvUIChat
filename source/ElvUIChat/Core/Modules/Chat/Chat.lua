@@ -113,7 +113,6 @@ CH.ClassNames = {}
 CH.Keywords = {}
 CH.PluginMessageFilters = {}
 CH.Smileys = {}
-CH.TalkingList = {}
 CH.FontHeights = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32 }
 CH.RoleIcons = {
 	TANK = E:TextureString(E.Media.Textures.Tank, ':15:15:0:0:64:64:2:56:2:56'),
@@ -3664,88 +3663,6 @@ function CH:FCFTab_UpdateColors(tab, selected)
 	end
 end
 
-function CH:GetAvailableHead()
-	for _, ChatHead in ipairs(CH.ChatHeadFrame) do
-		if not ChatHead:IsShown() then
-			return ChatHead
-		end
-	end
-end
-
-function CH:GetHeadByID(memberID)
-	for _, ChatHead in ipairs(CH.ChatHeadFrame) do
-		if ChatHead.memberID == memberID then
-			return ChatHead
-		end
-	end
-end
-
-function CH:ConfigureHead(memberID, channelID)
-	local frame = CH:GetAvailableHead()
-	if not frame then return end
-
-	frame.memberID = memberID
-	frame.channelID = channelID
-
-	C_VoiceChat_SetPortraitTexture(frame.Portrait.texture, memberID, channelID)
-
-	local memberName = C_VoiceChat_GetMemberName(memberID, channelID)
-	local r, g, b = _G.Voice_GetVoiceChannelNotificationColor(channelID)
-	frame.Name:SetText(memberName or '')
-	frame.Name:SetVertexColor(r, g, b, 1)
-	frame:Show()
-end
-
-function CH:DeconfigureHead(memberID, channelID) -- channelID kept for call signature compatibility
-	local frame = CH:GetHeadByID(memberID)
-	if not frame then return end
-
-	frame.memberID = nil
-	frame.channelID = nil
-	frame:Hide()
-end
-
-function CH:VoiceOverlay(event, ...)
-	if event == 'VOICE_CHAT_CHANNEL_MEMBER_SPEAKING_STATE_CHANGED' then
-		local memberID, channelID, isTalking = ...
-
-		if isTalking then
-			CH.TalkingList[memberID] = channelID
-			CH:ConfigureHead(memberID, channelID)
-		else
-			CH.TalkingList[memberID] = nil
-			CH:DeconfigureHead(memberID, channelID)
-		end
-	elseif event == 'VOICE_CHAT_CHANNEL_MEMBER_ENERGY_CHANGED' then
-		local memberID, channelID, volume = ...
-		local frame = CH:GetHeadByID(memberID)
-		if frame and channelID == frame.channelID then
-			frame.StatusBar:SetValue(volume)
-
-			frame.StatusBar:SetStatusBarColor(ColorGradient(volume, 1, 0, 0, 1, 1, 0, 0, 1, 0))
-		end
-	--[[elseif event == 'VOICE_CHAT_CHANNEL_TRANSMIT_CHANGED' then
-		local channelID, isTransmitting = ...
-		local localPlayerMemberID = C_VoiceChat.GetLocalPlayerMemberID(channelID)
-		if isTransmitting and not CH.TalkingList[localPlayerMemberID] then
-			CH.TalkingList[localPlayerMemberID] = channelID
-			CH:ConfigureHead(localPlayerMemberID, channelID)
-		end]]
-	end
-end
-
-function CH:SetChatHeadOrientation(position)
-	local point, relativePoint, offset = 'TOP', 'BOTTOM', -E.Border*3
-	if position == 'BOTTOM' then -- This is never used. Maybe was supposed to be an option at one point?
-		point, relativePoint, offset = 'BOTTOM', 'TOP', E.Border*3
-	end
-
-	for i, ChatHead in ipairs(CH.ChatHeadFrame) do
-		ChatHead:ClearAllPoints()
-		ChatHead:Point(point, i == 1 and CH.ChatHeadFrame or CH.ChatHeadFrame[i - 1], relativePoint, 0, offset)
-	end
-end
-
 function CH:GetPlayerInfoByGUID(guid)
 	if E:IsSecretValue(guid) then return end
 
@@ -4030,46 +3947,6 @@ function CH:Initialize()
 	end
 
 	if CH.db.chatHistory then CH:DisplayChatHistory() end
-
-	--Chat Heads Frame
-	CH.ChatHeadFrame = CreateFrame('Frame', 'ElvUIChatHeadFrame', E.UIParent)
-	CH.ChatHeadFrame:Point('TOPLEFT', E.UIParent, 'TOPLEFT', 368, -210)
-	CH.ChatHeadFrame:Size(200, 20)
-	-- ElvUIChat: Removed mover - voice overlay doesn't need manual positioning
-	CH.maxHeads = 5
-	CH.volumeBarHeight = 3
-
-	local CHAT_HEAD_HEIGHT = 40
-	for i = 1, CH.maxHeads do
-		local chatHead = CreateFrame('Frame', 'ElvUIChatHeadFrame'..i, CH.ChatHeadFrame)
-		chatHead:Width(CH.ChatHeadFrame:GetWidth())
-		chatHead:Height(CHAT_HEAD_HEIGHT)
-
-		chatHead.Portrait = CreateFrame('Frame', nil, chatHead)
-		chatHead.Portrait:Width(CHAT_HEAD_HEIGHT - CH.volumeBarHeight)
-		chatHead.Portrait:Height(CHAT_HEAD_HEIGHT - CH.volumeBarHeight - E.Border*2)
-		chatHead.Portrait:Point('TOPLEFT', chatHead, 'TOPLEFT')
-		chatHead.Portrait:SetTemplate()
-		chatHead.Portrait.texture = chatHead.Portrait:CreateTexture(nil, 'OVERLAY')
-		chatHead.Portrait.texture:SetTexCoord(0.15, 0.85, 0.15, 0.85)
-		chatHead.Portrait.texture:SetInside(chatHead.Portrait)
-
-		chatHead.Name = chatHead:CreateFontString(nil, 'OVERLAY')
-		chatHead.Name:FontTemplate(nil, 20)
-		chatHead.Name:Point('LEFT', chatHead.Portrait, 'RIGHT', 2, 0)
-
-		chatHead.StatusBar = CreateFrame('StatusBar', nil, chatHead)
-		chatHead.StatusBar:Point('TOPLEFT', chatHead.Portrait, 'BOTTOMLEFT', E.Border, -E.Spacing*3)
-		chatHead.StatusBar:Width(CHAT_HEAD_HEIGHT - E.Border*2 - CH.volumeBarHeight)
-		chatHead.StatusBar:Height(CH.volumeBarHeight)
-		chatHead.StatusBar:CreateBackdrop()
-		chatHead.StatusBar:SetStatusBarTexture(E.media.normTex)
-		chatHead.StatusBar:SetMinMaxValues(0, 1)
-
-		chatHead:Hide()
-		CH.ChatHeadFrame[i] = chatHead
-	end
-	CH:SetChatHeadOrientation('TOP')
 end
 
 E:RegisterModule(CH:GetName())

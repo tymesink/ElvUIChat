@@ -213,14 +213,6 @@ function E:UpdateMedia(mediaType)
 		E:UpdateClassColor(E.db.chat.tabSelectorColor)
 		E:UpdateClassColor(E.db.chat.tabSelectedTextColor)
 
-		-- Chat Panel Background Texture
-		local LeftChatPanel = _G.LeftChatPanel
-		if LeftChatPanel and LeftChatPanel.tex then
-			LeftChatPanel.tex:SetTexture(E.db.chat.panelBackdropNameLeft)
-
-			local a = E.db.general.backdropfadecolor.a or 0.5
-			LeftChatPanel.tex:SetAlpha(a)
-		end
 	end
 
 	E:ValueFuncCall()

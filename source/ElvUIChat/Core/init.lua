@@ -259,9 +259,6 @@ function E:OnInitialize()
 		end
 	end
 
-	E.ScanTooltip = CreateFrame('GameTooltip', 'ElvUIChat_ScanTooltip', WorldFrame, 'GameTooltipTemplate')
-	E.EasyMenu = CreateFrame('Frame', 'ElvUIChat_EasyMenu', UIParent, 'UIDropDownMenuTemplate')
-
 	E.Border = 2
 	E.Spacing = 1
 
@@ -277,17 +274,6 @@ function E:OnInitialize()
 	-- E:UIMult()
 	-- E:UpdateMedia()
 	-- E:InitializeInitialModules()
-end
-
-function E:SetEasyMenuAnchor(menu, frame)
-	local point = E:GetScreenQuadrant(frame)
-	local bottom = point and strfind(point, 'BOTTOM')
-	local left = point and strfind(point, 'LEFT')
-
-	local anchor1 = (bottom and left and 'BOTTOMLEFT') or (bottom and 'BOTTOMRIGHT') or (left and 'TOPLEFT') or 'TOPRIGHT'
-	local anchor2 = (bottom and left and 'TOPLEFT') or (bottom and 'TOPRIGHT') or (left and 'BOTTOMLEFT') or 'BOTTOMRIGHT'
-
-	UIDropDownMenu_SetAnchor(menu, 1, -1, anchor1, frame, anchor2)
 end
 
 function E:ResetProfile()
