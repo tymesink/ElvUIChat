@@ -5,14 +5,6 @@ local min = min
 local InCombatLockdown = InCombatLockdown
 local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
 
--- Simple combat guard used by ToggleOptions.
-function E:AlertCombat()
-	if InCombatLockdown() then
-		E:Print(ERR_NOT_IN_COMBAT)
-		return true
-	end
-end
-
 function E:Config_GetSize()
 	return E.global.general.AceGUI.width, E.global.general.AceGUI.height
 end
@@ -27,14 +19,6 @@ end
 function E:Config_GetWindow()
 	local ConfigOpen = ACD.OpenFrames and ACD.OpenFrames.ElvUIChat
 	return ConfigOpen and ConfigOpen.frame
-end
-
-function E:Config_CloseWindow()
-	ACD:Close('ElvUIChat')
-end
-
-function E:Config_OpenWindow()
-	ACD:Open('ElvUIChat')
 end
 
 -- Midnight WoW changed GameTooltip:SetText/AddLine to require an explicit alpha
