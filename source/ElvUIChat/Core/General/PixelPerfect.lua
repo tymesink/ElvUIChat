@@ -1,13 +1,10 @@
 local E, L, V, P, G = unpack(ElvUIChat)
 
-local min, max, format = min, max, format
-
 local _G = _G
 local UIParent = UIParent
 local GetScreenWidth = GetScreenWidth
 local GetScreenHeight = GetScreenHeight
 local InCombatLockdown = InCombatLockdown
-local GetPhysicalScreenSize = GetPhysicalScreenSize
 
 function E:RefreshGlobalFX() -- using RefreshModelScene will taint
 	_G.GlobalFXDialogModelScene:Hide()
@@ -48,29 +45,20 @@ function E:IsUltrawide(width, height)
 	end
 end
 
-function E:UIMult()
-	E.mult = E.perfect / E.global.general.UIScale
-end
-
 function E:UIScale()
 	if InCombatLockdown() then
 		E:RegisterEventForObject('PLAYER_REGEN_ENABLED', E.UIScale, E.UIScale)
 	else -- E.Initialize
 		UIParent:SetScale(E.global.general.UIScale)
 
-		E.uiscale = UIParent:GetScale()
 		E.screenWidth, E.screenHeight = GetScreenWidth(), GetScreenHeight()
 
 		local width, height = E.physicalWidth, E.physicalHeight
 		E.eyefinity = E:IsEyefinity(width, height)
 		E.ultrawide = E:IsUltrawide(width, height)
 
-		local testing, newWidth = false, E.eyefinity or E.ultrawide
-		if testing then -- Resize E.UIParent if Eyefinity or UltraWide is on.
-			-- Eyefinity / UltraWide Test: Resize the E.UIParent to be smaller than it should be, all objects inside should relocate.
-			-- Dragging moveable frames outside the box and reloading the UI ensures that they are saving position correctly.
-			width, height = E.screenWidth-250, E.screenHeight-250
-		elseif newWidth then -- Center E.UIParent
+		local newWidth = E.eyefinity or E.ultrawide
+		if newWidth then -- Center E.UIParent
 			width, height = newWidth / (height / E.screenHeight), E.screenHeight
 		else
 			width, height = E.screenWidth, E.screenHeight
@@ -86,22 +74,6 @@ function E:UIScale()
 			E:UnregisterEventForObject('PLAYER_REGEN_ENABLED', E.UIScale, E.UIScale)
 		end
 	end
-end
-
-function E:PixelBestSize()
-	return max(0.4, min(1.15, E.perfect))
-end
-
-function E:PixelScaleChanged(event)
-	if event == 'UI_SCALE_CHANGED' then
-		E.physicalWidth, E.physicalHeight = GetPhysicalScreenSize()
-		E.perfect = 768 / E.physicalHeight
-	end
-
-	E:UIMult()
-	E:UIScale()
-
-	E:Config_UpdateSize(true) -- Reposition config
 end
 
 function E:Scale(x)
