@@ -6,9 +6,7 @@ local E, L, V, P, G = unpack(ElvUIChat)
 V.general = {
 	normTex = 'ElvUIChat Norm',
 	glossTex = 'ElvUIChat Norm',
-	chatBubbles = 'backdrop',
 	pixelPerfect = false,
-	classColorMentionsSpeech = false,
 	voiceOverlay = false,
 }
 
