@@ -42,7 +42,6 @@ P.general = {
 P.chat = {
 	url = true,
 	panelSnapLeftID = nil, -- set by the snap code
-	panelSnapRightID = nil, -- same deal
 	panelSnapping = true,
 	shortChannels = true,
 	hyperlinkHover = true,
@@ -89,18 +88,13 @@ P.chat = {
 	timeStampFormat = 'NONE',
 	timeStampLocalTime = false,
 	keywords = 'ElvUIChat',
-	separateSizes = false,
 	panelWidth = 412,
 	panelHeight = 180,
-	panelWidthRight = 412,
-	panelHeightRight = 180,
 	panelBackdropNameLeft = '',
-	panelBackdropNameRight = '',
 	panelBackdrop = 'LEFT',
 	panelTabBackdrop = false,
 	panelTabTransparency = false,
 	LeftChatDataPanelAnchor = 'BELOW_CHAT',
-	RightChatDataPanelAnchor = 'BELOW_CHAT',
 	editBoxPosition = 'BELOW_CHAT',
 	fadeUndockedTabs = false,
 	fadeTabsNoBackdrop = true,
@@ -144,15 +138,6 @@ P.datatexts = {
 			'Talent/Loot Specialization', -- Retail
 			'Durability',
 			'Missions' -- Retail
-		},
-		RightChatDataPanel = {
-			enable = false,
-			backdrop = true,
-			border = true,
-			panelTransparency = false,
-			'System',
-			'Time',
-			'Gold'
 		}
 	},
 	battleground = false,

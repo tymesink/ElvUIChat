@@ -1328,18 +1328,18 @@ end
 function CH:FindChatWindows()
 	if not CH.db.panelSnapping then return end
 
-	local left, right = CH.LeftChatWindow, CH.RightChatWindow
+	local left = CH.LeftChatWindow
 
-	-- they already exist just return them :)
-	if left and right then
-		return left, right
+	-- already found, return it
+	if left then
+		return left
 	end
 
 	local docker = _G.GeneralDockManager.primary
 	for index, frameName in ipairs(_G.CHAT_FRAMES) do
 		local chat = _G[frameName]
 		if chat and ((chat.isDocked and chat == docker) or (not chat.isDocked and chat:IsShown())) then
-			if not left and index ~= CH.db.panelSnapRightID then
+			if not left then
 				if CH.db.panelSnapLeftID then
 					if CH.db.panelSnapLeftID == index then
 						left = chat
@@ -1350,32 +1350,17 @@ function CH:FindChatWindows()
 				end
 			end
 
-			if not right and index ~= CH.db.panelSnapLeftID then
-				if CH.db.panelSnapRightID then
-					if CH.db.panelSnapRightID == index then
-						right = chat
-					end
-				elseif _G.RightChatPanel and E:FramesOverlap(chat, _G.RightChatPanel) then
-					-- TODO: right panel removed; only overlap when it exists; reassess once right panel support is decided
-					CH.db.panelSnapRightID = index
-					right = chat
-				end
-			end
-
-			-- if both are found just return now, don't wait
-			if left and right then
-				return left, right
+			if left then
+				return left
 			end
 		end
 	end
 
-	-- none or one was found
-	-- Fallback for chat-only build: no LeftChatPanel to detect overlap, so assign primary docker
+	-- Fallback: no LeftChatPanel to detect overlap, assign primary docker
 	if not left then
-		local primaryDock = _G.GeneralDockManager and _G.GeneralDockManager.primary
-		if primaryDock then left = primaryDock end
+		if docker then left = docker end
 	end
-	return left, right
+	return left
 end
 
 function CH:GetDockerParent(docker, chat)
@@ -1404,11 +1389,6 @@ function CH:UpdateChatTab(chat)
 		chat:SetParent(parent)
 
 		CH:HandleFadeTabs(chat, fadeLeft)
-	elseif chat == CH.RightChatWindow then
-		tab:SetParent(parent)
-		chat:SetParent(parent)
-
-		CH:HandleFadeTabs(chat, fadeRight)
 	else
 		local docker = _G.GeneralDockManager.primary
 		local parent = CH:GetDockerParent(docker, chat)
@@ -1419,8 +1399,6 @@ function CH:UpdateChatTab(chat)
 
 		if parent and docker == CH.LeftChatWindow then
 			CH:HandleFadeTabs(chat, fadeLeft)
-		elseif parent and docker == CH.RightChatWindow then
-			CH:HandleFadeTabs(chat, fadeRight)
 		else
 			CH:HandleFadeTabs(chat, CH.db.fadeUndockedTabs and CH:IsUndocked(chat, docker))
 		end
@@ -1464,19 +1442,12 @@ function CH:RefreshToggleButtons()
 		toggle:SetAlpha(E.db.LeftChatPanelFaded and CH.db.fadeChatToggles and 0 or 1)
 		toggle:SetShown(not CH.db.hideChatToggles and showLeft)
 	end
-
-	local rightToggle = _G.RightChatToggleButton
-	-- TODO: right toggle absent when no right chat panel; revisit if right panel returns
-	if rightToggle then
-		rightToggle:SetAlpha(E.db.RightChatPanelFaded and CH.db.fadeChatToggles and 0 or 1)
-		rightToggle:SetShown(not CH.db.hideChatToggles and E.db.datatexts.panels.RightChatDataPanel.enable)
-	end
 end
 
 function CH:IsUndocked(chat, docker)
 	if not docker then docker = _G.GeneralDockManager.primary end
 
-	local primaryUndocked = docker ~= CH.LeftChatWindow and docker ~= CH.RightChatWindow
+	local primaryUndocked = docker ~= CH.LeftChatWindow
 	return not chat.isDocked or (primaryUndocked and ((chat == docker) or CH:GetDockerParent(docker, chat)))
 end
 
@@ -1484,17 +1455,12 @@ function CH:Unsnapped(chat)
 	if chat == CH.LeftChatWindow then
 		CH.LeftChatWindow = nil
 		CH.db.panelSnapLeftID = nil
-	elseif chat == CH.RightChatWindow then
-		CH.RightChatWindow = nil
-		CH.db.panelSnapRightID = nil
 	end
 end
 
 function CH:ClearSnapping()
 	CH.LeftChatWindow = nil
-	CH.RightChatWindow = nil
 	CH.db.panelSnapLeftID = nil
-	CH.db.panelSnapRightID = nil
 end
 
 function CH:SnappingChanged(chat)
@@ -1529,7 +1495,7 @@ function CH:ShowBackground(background, show)
 end
 
 function CH:PositionChat(chat)
-	CH.LeftChatWindow, CH.RightChatWindow = CH:FindChatWindows()
+	CH.LeftChatWindow = CH:FindChatWindows()
 
 	local docker = _G.GeneralDockManager.primary
 	if chat == docker then
@@ -1555,8 +1521,6 @@ function CH:PositionChat(chat)
 
 	if chat == CH.LeftChatWindow then
 		-- No SetSize: let Blizzard Edit Mode control the chat window dimensions
-		CH:ShowBackground(chat.Background, false)
-	elseif chat == CH.RightChatWindow and _G.RightChatPanel then
 		CH:ShowBackground(chat.Background, false)
 	else -- show if: not docked, or ChatFrame1, or attached to ChatFrame1
 		CH:ShowBackground(chat.Background, CH:IsUndocked(chat, docker))
@@ -3310,11 +3274,10 @@ tinsert(channelButtons, _G.ChatFrameToggleVoiceMuteButton)
 
 function CH:GetAnchorParents(chat)
 	local Left = (chat == CH.LeftChatWindow and _G.LeftChatPanel)
-	local Right = (chat == CH.RightChatWindow and _G.RightChatPanel)
-	local Chat = Left or Right or UIParent
+	local Chat = Left or UIParent
 	local TabPanel = Chat
-	if CH.db.panelTabBackdrop and not ((CH.db.panelBackdrop == 'HIDEBOTH') or (Left and CH.db.panelBackdrop == 'RIGHT') or (Right and CH.db.panelBackdrop == 'LEFT')) then
-		TabPanel = (Left and _G.LeftChatTab) or (Right and _G.RightChatTab)
+	if CH.db.panelTabBackdrop and not (CH.db.panelBackdrop == 'HIDEBOTH' or (Left and CH.db.panelBackdrop == 'RIGHT')) then
+		TabPanel = Left and _G.LeftChatTab
 	end
 
 	return TabPanel or Chat, Chat

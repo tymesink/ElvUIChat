@@ -2,7 +2,6 @@
 	<Script file='Core.lua'/>
 	<Script file='Math.lua'/>
 	<Script file='API.lua'/>
-	<Script file='Install.lua'/>
 	<Script file='PixelPerfect.lua'/>
 	<Script file='Toolkit.lua'/>
 	<Script file='StaticPopups.lua'/>

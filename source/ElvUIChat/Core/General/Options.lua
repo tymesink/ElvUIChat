@@ -184,7 +184,7 @@ function E:LoadConfigOptions_Chat()
     Panels.args.panels = ACH:Group('Chat Panels', nil, 7)
     Panels.args.panels.inline = true
     Panels.args.panels.args.panelColor = ACH:Color('Backdrop Color', nil, 1, true, nil, function(info) local t, d = E.db.chat[info[#info]], P.chat[info[#info]] return t.r, t.g, t.b, t.a, d.r, d.g, d.b, d.a end, function(info, r, g, b, a) local t = E.db.chat[info[#info]] t.r, t.g, t.b, t.a = r, g, b, a CH:Panels_ColorUpdate() end)
-    Panels.args.panels.args.panelHeight = ACH:Range(function() return E.db.chat.separateSizes and 'Left Panel Height' or 'Panel Height' end, function() return E.db.chat.separateSizes and 'Adjust the height of your left chat panel.' or nil end, 3, { min = 60, max = 1000, step = 1 }, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:PositionChats() end)
-    Panels.args.panels.args.panelWidth = ACH:Range(function() return E.db.chat.separateSizes and 'Left Panel Width' or 'Panel Width' end, function() return E.db.chat.separateSizes and 'Adjust the width of your left chat panel.' or nil end, 4, { min = 50, max = 2000, step = 1 }, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:PositionChats() end)
+    Panels.args.panels.args.panelHeight = ACH:Range('Panel Height', nil, 3, { min = 60, max = 1000, step = 1 }, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:PositionChats() end)
+    Panels.args.panels.args.panelWidth = ACH:Range('Panel Width', nil, 4, { min = 50, max = 2000, step = 1 }, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:PositionChats() end)
     Panels.args.panels.args.panelSnapping = ACH:Toggle('Panel Snapping', 'When disabled, the Chat Background color has to be set via Blizzards Chat Tabs Background setting.', 6, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:PositionChats() end, nil, function() return not E.Chat.Initialized end)
 end

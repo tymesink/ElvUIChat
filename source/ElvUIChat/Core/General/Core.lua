@@ -351,14 +351,12 @@ function E:UpdateMedia(mediaType)
 		E:UpdateClassColor(E.db.chat.tabSelectedTextColor)
 
 		-- Chat Panel Background Texture
-		local LeftChatPanel, RightChatPanel = _G.LeftChatPanel, _G.RightChatPanel
-		if LeftChatPanel and LeftChatPanel.tex and RightChatPanel and RightChatPanel.tex then
+		local LeftChatPanel = _G.LeftChatPanel
+		if LeftChatPanel and LeftChatPanel.tex then
 			LeftChatPanel.tex:SetTexture(E.db.chat.panelBackdropNameLeft)
-			RightChatPanel.tex:SetTexture(E.db.chat.panelBackdropNameRight)
 
 			local a = E.db.general.backdropfadecolor.a or 0.5
 			LeftChatPanel.tex:SetAlpha(a)
-			RightChatPanel.tex:SetAlpha(a)
 		end
 	end
 
