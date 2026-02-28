@@ -68,7 +68,6 @@ E.NewSign = [[|TInterface\OptionsFrame\UI-OptionsFrame-NewFeatureIcon:14:14|t]]
 E.NewSignNoWhatsNew = [[|TInterface\OptionsFrame\UI-OptionsFrame-NewFeatureIcon:14:14:0:0|t]]
 E.TexturePath = [[Interface\AddOns\ElvUI\Media\Textures\]] -- for plugins?
 E.ClearTexture = 0 -- used to clear: Set (Normal, Disabled, Checked, Pushed, Highlight) Texture
-E.UserList = {}
 
 -- ElvUIChat: We don't have oUF, skip these
 -- E.oUF.Tags.Vars.E = E
@@ -853,76 +852,12 @@ do	--Split string by multi-character delimiter (the strsplit / string.split func
 	end
 end
 
-do
-	local SendMessageWaiting -- only allow 1 delay at a time regardless of eventing
-	function E:SendMessage()
-		if IsInRaid() then
-			C_ChatInfo_SendAddonMessage('ELVUI_VERSIONCHK', E.version, (not IsInRaid(LE_PARTY_CATEGORY_HOME) and IsInRaid(LE_PARTY_CATEGORY_INSTANCE)) and 'INSTANCE_CHAT' or 'RAID')
-		elseif IsInGroup() then
-			C_ChatInfo_SendAddonMessage('ELVUI_VERSIONCHK', E.version, (not IsInGroup(LE_PARTY_CATEGORY_HOME) and IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) and 'INSTANCE_CHAT' or 'PARTY')
-		elseif IsInGuild() then
-			C_ChatInfo_SendAddonMessage('ELVUI_VERSIONCHK', E.version, 'GUILD')
-		end
-
-		SendMessageWaiting = nil
-	end
-
-	local SendRecieveGroupSize = 0
-	local PLAYER_NAME = format('%s-%s', E.myname, E:ShortenRealm(E.myrealm))
-	local function SendRecieve(_, event, prefix, message, _, senderOne, senderTwo)
-		if event == 'CHAT_MSG_ADDON' then
-			local sender = strfind(senderOne, '-') and senderOne or senderTwo
-			if sender == PLAYER_NAME then
-				return
-			elseif prefix == 'ELVUI_VERSIONCHK' then
-				local ver, msg, inCombat = E.version, tonumber(message), InCombatLockdown()
-
-				E.UserList[E:StripMyRealm(sender)] = msg
-
-				if msg and (msg > ver) and not E.recievedOutOfDateMessage then -- you're outdated D:
-					E:Print(L["ElvUI is out of date. You can download the newest version from tukui.org."])
-
-					if msg and ((msg - ver) >= 0.05) and not inCombat then
-						E.PopupDialogs.ELVUI_UPDATE_AVAILABLE.text = L["ElvUI is five or more revisions out of date. You can download the newest version from tukui.org."]..format('\n\nSender %s : Version %s', sender, msg)
-
-						E:StaticPopup_Show('ELVUI_UPDATE_AVAILABLE')
-					end
-
-					E.recievedOutOfDateMessage = true
-				end
-			end
-		elseif event == 'GROUP_ROSTER_UPDATE' then
-			local num = GetNumGroupMembers()
-			if num ~= SendRecieveGroupSize then
-				if num > 1 and num > SendRecieveGroupSize then
-					if not SendMessageWaiting then
-						SendMessageWaiting = E:Delay(10, E.SendMessage)
-					end
-				end
-				SendRecieveGroupSize = num
-			end
-		elseif event == 'PLAYER_ENTERING_WORLD' then
-			if not SendMessageWaiting then
-				SendMessageWaiting = E:Delay(10, E.SendMessage)
-			end
-		end
-	end
-
-	_G.C_ChatInfo.RegisterAddonMessagePrefix('ELVUI_VERSIONCHK')
-
-	local f = CreateFrame('Frame')
-	f:SetScript('OnEvent', SendRecieve)
-	f:RegisterEvent('CHAT_MSG_ADDON')
-	f:RegisterEvent('GROUP_ROSTER_UPDATE')
-	f:RegisterEvent('PLAYER_ENTERING_WORLD')
-end
 
 function E:UpdateStart(skipCallback, skipUpdateDB)
 	if not skipUpdateDB then
 		E:UpdateDB()
 	end
 
-	E:UpdateMoverPositions()
 	E:UpdateMediaItems()
 
 	if not skipCallback then
@@ -977,10 +912,6 @@ function E:UpdateDB()
 	E:SetupDB()
 
 	-- ElvUIChat: Removed unitframe border color defaults - we don't have UnitFrames module
-end
-
-function E:UpdateMoverPositions()
-	-- ElvUIChat: Stub - movers removed, chat doesn't need manual positioning
 end
 
 
