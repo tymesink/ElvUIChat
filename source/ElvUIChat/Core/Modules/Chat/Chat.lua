@@ -928,12 +928,13 @@ function CH:StyleChat(frame)
 	frame:SetClampRectInsets(0,0,0,0)
 	frame:SetClampedToScreen(false)
 	frame:StripTextures(true)
-	-- Use a dedicated child backdrop frame (CreateBackdrop) rather than SetTemplate on the
-	-- ScrollingMessageFrame directly, since special frame types don't reliably support SetBackdrop.
-	-- allPoints=true keeps the backdrop the same size as the chat frame.
-	frame:CreateBackdrop('Transparent', nil, true, nil, nil, nil, nil, true)
+	-- CreateTexture on the BACKGROUND layer is the reliable way to add a colored background
+	-- to a ScrollingMessageFrame. The backdrop system does not work on this frame type.
+	local bg = frame:CreateTexture(nil, 'BACKGROUND', nil, -8)
+	bg:SetAllPoints()
 	local panelColor = CH.db.panelColor
-	frame.backdrop:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
+	bg:SetColorTexture(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
+	frame.chatBg = bg
 
 	--Character count
 	local editbox = frame.editBox
@@ -1548,8 +1549,8 @@ function CH:Panel_ColorUpdate()
 	local panelColor = CH.db.panelColor
 	for _, frameName in ipairs(_G.CHAT_FRAMES) do
 		local chat = _G[frameName]
-		if chat and chat.styled and chat.backdrop then
-			chat.backdrop:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
+		if chat and chat.styled and chat.chatBg then
+			chat.chatBg:SetColorTexture(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
 		end
 	end
 end
