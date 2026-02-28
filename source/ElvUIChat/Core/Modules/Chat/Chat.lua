@@ -928,6 +928,9 @@ function CH:StyleChat(frame)
 	frame:SetClampRectInsets(0,0,0,0)
 	frame:SetClampedToScreen(false)
 	frame:StripTextures(true)
+	frame:SetTemplate('Transparent', nil, true) -- ignoreUpdates: color managed by Panel_ColorUpdate
+	local panelColor = CH.db.panelColor
+	frame:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
 
 	--Character count
 	local editbox = frame.editBox
@@ -1586,7 +1589,15 @@ function CH:PositionChats()
 	end
 end
 
-function CH:Panel_ColorUpdate() end
+function CH:Panel_ColorUpdate()
+	local panelColor = CH.db.panelColor
+	for _, frameName in ipairs(_G.CHAT_FRAMES) do
+		local chat = _G[frameName]
+		if chat and chat.styled then
+			chat:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
+		end
+	end
+end
 
 function CH:Panels_ColorUpdate() end
 
