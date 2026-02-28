@@ -171,28 +171,10 @@ function E:StaticPopup_SetUpPosition(dialog)
 	end
 end
 
-function E:StaticPopupSpecial_Show(frame)
-	if frame.exclusive then
-		E:StaticPopup_HideExclusive()
-	end
-
-	E:StaticPopup_SetUpPosition(frame)
-	frame:Show()
-end
-
 function E:StaticPopupSpecial_Hide(frame)
 	frame:Hide()
 	E:StaticPopup_CollapseTable()
 end
-
-function E:StaticPopupSpecial_Toggle(frame)
-	if frame:IsShown() then
-		E:StaticPopupSpecial_Hide(frame)
-	else
-		E:StaticPopupSpecial_Show(frame)
-	end
-end
-
 
 function E:StaticPopup_ClearText()
 	self:SetText('')
