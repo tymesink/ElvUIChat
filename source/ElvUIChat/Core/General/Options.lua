@@ -56,6 +56,7 @@ function E:LoadConfigOptions()
 	E:LoadConfigOptions_Core()
 	E:LoadConfigOptions_Chat()
 	E:PatchAceTooltip()
+	E:PatchColorPickerFrame()
 end
 
 function E:LoadConfigOptions_Core()

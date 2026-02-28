@@ -40,6 +40,50 @@ end
 -- Midnight WoW changed GameTooltip:SetText/AddLine to require an explicit alpha
 -- before the wrap boolean. Patch the AceConfigDialog tooltip instance so old
 -- callers that pass (text, r, g, b, wrap) still work.
+-- Midnight removed ColorPickerFrame:SetColorRGB() and ColorPickerFrame:Show() (old open API).
+-- Ace3's AceGUIWidget-ColorPicker still uses the old pattern:
+--   frame.func/opacityFunc/cancelFunc/hasOpacity/opacity set, then SetColorRGB + Show.
+-- Shim SetColorRGB to store r,g,b and hook Show to call SetupColorPickerAndShow instead.
+-- Also shim OpacitySliderFrame which the old Ace3 callbacks reference for alpha value.
+function E:PatchColorPickerFrame()
+	local CPF = _G.ColorPickerFrame
+	if not CPF or CPF.__ecPatched then return end
+	CPF.__ecPatched = true
+
+	if not CPF.SetColorRGB then
+		CPF.SetColorRGB = function(self, r, g, b)
+			self._shimR, self._shimG, self._shimB = r, g, b
+		end
+
+		local origShow = CPF.Show
+		CPF.Show = function(self, ...)
+			if self._shimR ~= nil then
+				local r, g, b = self._shimR, self._shimG, self._shimB
+				self._shimR, self._shimG, self._shimB = nil, nil, nil
+				self:SetupColorPickerAndShow({
+					r = r, g = g, b = b,
+					opacity = self.opacity or 0,
+					hasOpacity = self.hasOpacity or false,
+					swatchFunc = self.func,
+					opacityFunc = self.opacityFunc,
+					cancelFunc = self.cancelFunc,
+				})
+			else
+				origShow(self, ...)
+			end
+		end
+	end
+
+	-- Old Ace3 callbacks use OpacitySliderFrame:GetValue() to get opacity (1-alpha).
+	if not _G.OpacitySliderFrame then
+		_G.OpacitySliderFrame = {
+			GetValue = function()
+				return CPF.hasOpacity and (1 - CPF:GetColorAlpha()) or 0
+			end
+		}
+	end
+end
+
 function E:PatchAceTooltip()
 	local tip = ACD and ACD.tooltip
 	if not tip or tip.__ecPatched then return end
