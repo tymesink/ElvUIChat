@@ -1546,12 +1546,18 @@ function CH:Panel_ColorUpdate()
 	for _, frameName in ipairs(_G.CHAT_FRAMES) do
 		local chat = _G[frameName]
 		if chat and chat.styled then
+			if not chat.iborder then
+				-- backdrop wasn't fully applied on first style (e.g. blankTex was nil), reapply
+				chat:SetTemplate('Transparent', nil, true)
+			end
 			chat:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
 		end
 	end
 end
 
-function CH:Panels_ColorUpdate() end
+function CH:Panels_ColorUpdate()
+	CH:Panel_ColorUpdate()
+end
 
 function CH:UpdateChatTabColors()
 	-- don't proceed when chat is disabled
