@@ -25,7 +25,6 @@ local GetCVarBool = C_CVar.GetCVarBool
 -- GLOBALS: ElvUIChatCharacterDB
 
 --Modules (ElvUIChat: Only load modules we have)
-local AFK = E:GetModule('AFK')
 local Chat = E:GetModule('Chat')
 local Layout = E:GetModule('Layout')
 local Skins = E:GetModule('Skins')
