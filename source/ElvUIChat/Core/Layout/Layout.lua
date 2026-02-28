@@ -1,87 +1,13 @@
 local E, L, V, P, G = unpack(ElvUIChat)
 local LO = E:GetModule('Layout')
-local CH = E:GetModule('Chat')
 
 local _G = _G
-local CreateFrame = CreateFrame
-local FCF_SavePositionAndDimensions = FCF_SavePositionAndDimensions
--- GLOBALS: HideLeftChat, HideBothChat
 
 local BAR_HEIGHT = 22
 local TOGGLE_WIDTH = 18
 
-local function Panel_OnShow(self)
-	self:SetFrameLevel(200)
-	self:SetFrameStrata('BACKGROUND')
-end
-
 function LO:Initialize()
 	LO.Initialized = true
-end
-
-local function finishFade(self)
-	if self:GetAlpha() == 0 then
-		self:Hide()
-	end
-end
-
-local function fadeChatPanel(self, duration, alpha)
-	if alpha == 1 then
-		self.parent:Show()
-	end
-
-	E:UIFrameFadeOut(self.parent, duration, self.parent:GetAlpha(), alpha)
-
-	if E.db.chat.fadeChatToggles then
-		E:UIFrameFadeOut(self, duration, self:GetAlpha(), alpha)
-	end
-end
-
-local function ChatButton_OnEnter(self)
-	if E.db[self.parent:GetName()..'Faded'] then
-		fadeChatPanel(self, 0.3, 1)
-	end
-
-	if not _G.GameTooltip:IsForbidden() then
-		_G.GameTooltip:SetOwner(self, 'ANCHOR_TOPLEFT', 0, 4)
-		_G.GameTooltip:ClearLines()
-		_G.GameTooltip:AddDoubleLine(L["Left Click:"], L["Toggle Chat Frame"], 1, 1, 1)
-		_G.GameTooltip:Show()
-	end
-end
-
-local function ChatButton_OnLeave(self)
-	if E.db[self.parent:GetName()..'Faded'] then
-		fadeChatPanel(self, 0.3, 0)
-	end
-
-	if not _G.GameTooltip:IsForbidden() then
-		_G.GameTooltip:Hide()
-	end
-end
-
-local function ChatButton_OnClick(self)
-	local name = self.parent:GetName()..'Faded'
-	if E.db[name] then
-		E.db[name] = nil
-		fadeChatPanel(self, 0.2, 1)
-	else
-		E.db[name] = true
-		fadeChatPanel(self, 0.2, 0)
-	end
-
-	if not _G.GameTooltip:IsForbidden() then
-		_G.GameTooltip:Hide()
-	end
-end
-
--- these are used by the bindings and options
-function HideLeftChat()
-	ChatButton_OnClick(_G.LeftChatToggleButton)
-end
-
-function HideBothChat()
-	ChatButton_OnClick(_G.LeftChatToggleButton)
 end
 
 function LO:ToggleChatTabPanels(rightOverride, leftOverride)
@@ -91,22 +17,6 @@ function LO:ToggleChatTabPanels(rightOverride, leftOverride)
 		_G.LeftChatTab:Hide()
 	else
 		_G.LeftChatTab:Show()
-	end
-end
-
-do
-	local function DataPanelStyle(panel, db)
-		panel.forcedBorderColors = (db.border == false and {0,0,0,0}) or nil
-		panel:SetTemplate(db.backdrop and (db.panelTransparency and 'Transparent' or 'Default') or 'NoBackdrop', true)
-
-		if db.border ~= nil then
-			if panel.iborder then panel.iborder:SetShown(db.border) end
-			if panel.oborder then panel.oborder:SetShown(db.border) end
-		end
-	end
-
-	function LO:SetDataPanelStyle()
-		DataPanelStyle(_G.LeftChatToggleButton, E.db.datatexts.panels.LeftChatDataPanel)
 	end
 end
 
@@ -197,25 +107,6 @@ function LO:ToggleChatPanels()
 	else
 		LO:ToggleChatTabPanels(nil, true)
 	end
-end
-
-function LO:ResaveChatPosition()
-	if not E.private.chat.enable then return end
-
-	local name = self.name
-	local chat = CH.LeftChatWindow
-
-	if chat and chat:GetLeft() then
-		FCF_SavePositionAndDimensions(chat)
-	end
-end
-
-function LO:CreateChatPanels()
-	-- Chat-only build: no dedicated chat panel scaffolding
-	_G.LeftChatPanel = nil
-	_G.LeftChatTab = nil
-	_G.LeftChatDataPanel = nil
-	_G.LeftChatToggleButton = nil
 end
 
 E:RegisterModule(LO:GetName())
