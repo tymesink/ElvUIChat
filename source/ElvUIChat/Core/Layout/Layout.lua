@@ -38,7 +38,7 @@ function LO:RepositionChatDataPanels()
 
 	LeftChatDataPanel:ClearAllPoints()
 
-	local SPACING = E.PixelMode and 1 or -1
+	local SPACING = -1
 	local sideButton = E.db.chat.hideChatToggles and 0 or toggleWidth
 	LeftChatDataPanel:Point('TOPRIGHT', LeftChatPanel, 'BOTTOMRIGHT', 0, SPACING)
 	LeftChatDataPanel:Point('BOTTOMLEFT', LeftChatPanel, 'BOTTOMLEFT', sideButton, -barHeight)

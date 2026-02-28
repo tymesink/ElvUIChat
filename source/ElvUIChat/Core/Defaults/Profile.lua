@@ -3,17 +3,10 @@ local E, L, V, P, G = unpack(ElvUIChat)
 local CopyTable = CopyTable -- Our function doesn't exist yet.
 local next = next
 
-P.hideTutorial = true
-P.dbConverted = nil -- use this to let DBConversions run once per profile
-
 --Core
 P.general = {
 	messageRedirect = _G.DEFAULT_CHAT_FRAME:GetName(),
-	smoothingAmount = 0.33,
-	taintLog = false,
-	stickyFrames = false,
 	loginmessage = true,
-	questXPPercent = false,
 	numberPrefixStyle = 'ENGLISH',
 	decimalLength = 1,
 	fontSize = 12,

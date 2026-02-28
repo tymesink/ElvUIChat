@@ -4007,18 +4007,7 @@ function CH:Initialize()
 	-- ElvUIChat: Always register Retail events
 	CH:RegisterEvent('SOCIAL_QUEUE_UPDATE', 'SocialQueueEvent')
 
-	if E.private.general.voiceOverlay then
-		CH:RegisterEvent('VOICE_CHAT_CHANNEL_MEMBER_SPEAKING_STATE_CHANGED', 'VoiceOverlay')
-		CH:RegisterEvent('VOICE_CHAT_CHANNEL_MEMBER_ENERGY_CHANGED', 'VoiceOverlay')
-		CH:RegisterEvent('VOICE_CHAT_CHANNEL_TRANSMIT_CHANGED', 'VoiceOverlay')
-		CH:RegisterEvent('VOICE_CHAT_COMMUNICATION_MODE_CHANGED', 'VoiceOverlay')
-		CH:RegisterEvent('VOICE_CHAT_CHANNEL_MEMBER_REMOVED', 'VoiceOverlay')
-		CH:RegisterEvent('VOICE_CHAT_CHANNEL_REMOVED', 'VoiceOverlay')
-		CH:RegisterEvent('VOICE_CHAT_CHANNEL_DEACTIVATED', 'VoiceOverlay')
-		_G.VoiceActivityManager:UnregisterAllEvents()
-	else
-		CH:RegisterEvent('PLAYER_ENTERING_WORLD', 'ResnapDock')
-	end
+	CH:RegisterEvent('PLAYER_ENTERING_WORLD', 'ResnapDock')
 
 	if _G.WIM then
 		_G.WIM.RegisterWidgetTrigger('chat_display', 'whisper,chat,w2w,demo', 'OnHyperlinkClick', function(frame) CH.clickedframe = frame end)

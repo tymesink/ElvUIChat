@@ -206,8 +206,7 @@ local function SetTemplate(frame, template, glossTex, ignoreUpdates, forcePixelM
 			frame:SetBackdropColor(backdropr, backdropg, backdropb, frame.customBackdropAlpha or (template == 'Transparent' and backdropa) or 1)
 		end
 
-		local notPixelMode = not E.PixelMode
-		if notPixelMode and not forcePixelMode then
+		if not forcePixelMode then
 			local backdrop = {
 				edgeFile = E.media.blankTex,
 				edgeSize = 1

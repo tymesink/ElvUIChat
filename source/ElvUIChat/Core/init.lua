@@ -51,15 +51,6 @@ E.Skins = E:NewModule('Skins','AceTimer-3.0','AceHook-3.0','AceEvent-3.0')
 E.InfoColor = '|cff1784d1' -- blue
 E.InfoColor2 = '|cff9b9b9b' -- silver
 
-do -- Retail Only (ElvUIChat)
-	E.Retail = true
-	E.Classic = false
-	E.TBC = false
-	E.Wrath = false
-	E.Cata = false
-	E.Mists = false
-end
-
 -- ElvUIChat: Initialize tables early so General files can use them
 E.RegisteredModules = {}
 E.RegisteredInitialModules = {}
@@ -271,7 +262,6 @@ function E:OnInitialize()
 	E.ScanTooltip = CreateFrame('GameTooltip', 'ElvUIChat_ScanTooltip', WorldFrame, 'GameTooltipTemplate')
 	E.EasyMenu = CreateFrame('Frame', 'ElvUIChat_EasyMenu', UIParent, 'UIDropDownMenuTemplate')
 
-	E.PixelMode = false
 	E.Border = 2
 	E.Spacing = 1
 
