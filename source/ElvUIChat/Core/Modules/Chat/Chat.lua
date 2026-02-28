@@ -928,9 +928,12 @@ function CH:StyleChat(frame)
 	frame:SetClampRectInsets(0,0,0,0)
 	frame:SetClampedToScreen(false)
 	frame:StripTextures(true)
-	frame:SetTemplate('Transparent', nil, true) -- ignoreUpdates: color managed by Panel_ColorUpdate
+	-- Use a dedicated child backdrop frame (CreateBackdrop) rather than SetTemplate on the
+	-- ScrollingMessageFrame directly, since special frame types don't reliably support SetBackdrop.
+	-- allPoints=true keeps the backdrop the same size as the chat frame.
+	frame:CreateBackdrop('Transparent', nil, true, nil, nil, nil, nil, nil, true)
 	local panelColor = CH.db.panelColor
-	frame:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
+	frame.backdrop:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
 
 	--Character count
 	local editbox = frame.editBox
@@ -1545,12 +1548,8 @@ function CH:Panel_ColorUpdate()
 	local panelColor = CH.db.panelColor
 	for _, frameName in ipairs(_G.CHAT_FRAMES) do
 		local chat = _G[frameName]
-		if chat and chat.styled then
-			if not chat.iborder then
-				-- backdrop wasn't fully applied on first style (e.g. blankTex was nil), reapply
-				chat:SetTemplate('Transparent', nil, true)
-			end
-			chat:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
+		if chat and chat.styled and chat.backdrop then
+			chat.backdrop:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
 		end
 	end
 end
