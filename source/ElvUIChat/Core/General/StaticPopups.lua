@@ -8,110 +8,21 @@ local tremove, tContains, tinsert = tremove, tContains, tinsert
 
 local CreateFrame = CreateFrame
 local UnitIsDeadOrGhost, InCinematic = UnitIsDeadOrGhost, InCinematic
-local ReloadUI, PlaySound, StopMusic = ReloadUI, PlaySound, StopMusic
+local ReloadUI, PlaySound = ReloadUI, PlaySound
 local GetBindingFromClick = GetBindingFromClick
 
 local AutoCompleteOnTextChanged = AutoCompleteEditBox_OnTextChanged
 local AutoCompleteOnEnterPressed = AutoCompleteEditBox_OnEnterPressed
-local ChatEditFocusActiveWindow = (ChatFrameUtil and ChatFrameUtil.FocusActiveWindow) or ChatEdit_FocusActiveWindow
-
-local DisableAddOn = C_AddOns.DisableAddOn
-local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 
 local STATICPOPUP_TEXTURE_ALERT = STATICPOPUP_TEXTURE_ALERT
 local STATICPOPUP_TEXTURE_ALERTGEAR = STATICPOPUP_TEXTURE_ALERTGEAR
-local YES, NO, OKAY, CANCEL, ACCEPT, DECLINE = YES, NO, OKAY, CANCEL, ACCEPT, DECLINE
+local CANCEL, ACCEPT, DECLINE = CANCEL, ACCEPT, DECLINE
 
--- GLOBALS: ElvUIBindPopupWindowCheckButton
-
-local DOWNLOAD_URL = 'https://tukui.org/elvui'
 local FALLBACK_COLOR = { 1, 1, 1, 1 }
 
 E.PopupDialogs = {}
 E.StaticPopup_DisplayedFrames = {}
 E.MAX_STATIC_POPUPS = 4
-
-E.PopupDialogs.ELVUI_UPDATE_AVAILABLE = {
-	text = L["ElvUI is five or more revisions out of date. You can download the newest version from tukui.org."],
-	hasEditBox = 1,
-	OnShow = function(self)
-		self.editBox:SetAutoFocus(false)
-		self.editBox.width = self.editBox:GetWidth()
-		self.editBox:Width(220)
-		self.editBox:SetText(DOWNLOAD_URL)
-		ChatEditFocusActiveWindow()
-	end,
-	OnHide = function(self)
-		self.editBox:Width(self.editBox.width or 50)
-		self.editBox.width = nil
-	end,
-	hideOnEscape = 1,
-	button1 = OKAY,
-	EditBoxOnEnterPressed = function(self)
-		ChatEditFocusActiveWindow()
-		self:GetParent():Hide()
-	end,
-	EditBoxOnEscapePressed = function(self)
-		ChatEditFocusActiveWindow()
-		self:GetParent():Hide()
-	end,
-	EditBoxOnTextChanged = function(self)
-		if self:GetText() ~= DOWNLOAD_URL then
-			self:SetText(DOWNLOAD_URL)
-		end
-
-		self:HighlightText()
-
-		ChatEditFocusActiveWindow()
-	end,
-	OnEditFocusGained = function(self)
-		self:HighlightText()
-	end,
-	showAlert = 1,
-}
-
-E.PopupDialogs.ELVUI_EDITBOX = {
-	text = E.title,
-	button1 = OKAY,
-	hasEditBox = 1,
-	OnShow = function(self, data)
-		self.editBox:SetAutoFocus(false)
-		self.editBox.width = self.editBox:GetWidth()
-		self.editBox:Width(280)
-		self.editBox:AddHistoryLine('text')
-		self.editBox.temptxt = data
-		self.editBox:SetText(data)
-		self.editBox:SetJustifyH('CENTER')
-	end,
-	OnHide = function(self)
-		self.editBox:Width(self.editBox.width or 50)
-		self.editBox.width = nil
-		self.temptxt = nil
-	end,
-	EditBoxOnEnterPressed = function(self)
-		self:GetParent():Hide()
-	end,
-	EditBoxOnEscapePressed = function(self)
-		self:GetParent():Hide()
-	end,
-	EditBoxOnTextChanged = function(self)
-		if self:GetText() ~= self.temptxt then
-			self:SetText(self.temptxt)
-		end
-
-		self:HighlightText()
-	end,
-	whileDead = 1,
-	preferredIndex = 3,
-	hideOnEscape = 1,
-}
-
-E.PopupDialogs.UPDATE_REQUEST = {
-	text = L["UPDATE_REQUEST"],
-	button1 = OKAY,
-	showAlert = 1,
-}
-
 
 E.PopupDialogs.DISABLE_INCOMPATIBLE_ADDON = {
 	text = L["Do you swear not to post in technical support about something not working without first disabling the addon/module combination first?"],
@@ -150,50 +61,6 @@ E.PopupDialogs.CONFIG_RL = {
 	button1 = ACCEPT,
 	button2 = CANCEL,
 	OnAccept = ReloadUI,
-	whileDead = 1,
-	hideOnEscape = false,
-}
-
-E.PopupDialogs.GLOBAL_RL = {
-	text = L["One or more of the changes you have made will effect all characters using this addon. You will have to reload the user interface to see the changes you have made."],
-	button1 = ACCEPT,
-	button2 = CANCEL,
-	OnAccept = ReloadUI,
-	whileDead = 1,
-	hideOnEscape = false,
-}
-
-E.PopupDialogs.PRIVATE_RL = {
-	text = L["A setting you have changed will change an option for this character only. This setting that you have changed will be uneffected by changing user profiles. Changing this setting requires that you reload your User Interface."],
-	button1 = ACCEPT,
-	button2 = CANCEL,
-	OnAccept = ReloadUI,
-	whileDead = 1,
-	hideOnEscape = false,
-}
-
-
-
-E.PopupDialogs.CONFIRM_LOOT_DISTRIBUTION = {
-	text = CONFIRM_LOOT_DISTRIBUTION,
-	button1 = YES,
-	button2 = NO,
-	hideOnEscape = 1,
-}
-
-E.PopupDialogs.APPLY_FONT_WARNING = {
-	text = L["Are you sure you want to apply this font to all ElvUI elements?"],
-	OnAccept = function() E:GeneralMedia_ApplyToAll() end,
-	OnCancel = function() E:StaticPopup_Hide('APPLY_FONT_WARNING') end,
-	button1 = YES,
-	button2 = CANCEL,
-	whileDead = 1,
-	hideOnEscape = false,
-}
-
-E.PopupDialogs.MODULE_COPY_CONFIRM = {
-	button1 = ACCEPT,
-	button2 = CANCEL,
 	whileDead = 1,
 	hideOnEscape = false,
 }
@@ -326,17 +193,6 @@ function E:StaticPopupSpecial_Toggle(frame)
 	end
 end
 
---Used to figure out if we can resize a frame
-function E:StaticPopup_IsLastDisplayedFrame(frame)
-	for i = #E.StaticPopup_DisplayedFrames, 1, -1 do
-		local popup = E.StaticPopup_DisplayedFrames[i]
-		if popup:IsShown() then
-			return frame == popup
-		end
-	end
-
-	return false
-end
 
 function E:StaticPopup_ClearText()
 	self:SetText('')
@@ -1012,60 +868,6 @@ function E:StaticPopup_CheckButtonOnClick()
 	if info.checkButtonOnClick then
 		info.checkButtonOnClick(self)
 	end
-end
-
--- Static popup secure buttons
-local SecureButtons = {}
-local SecureOnEnter = function(frame) frame.text:SetTextColor(1, 1, 1) end
-local SecureOnLeave = function(frame) frame.text:SetTextColor(1, 0.2, 0.2) end
-function E:StaticPopup_CreateSecureButton(popup, button, text, attributes)
-	local btn = CreateFrame('Button', nil, popup, 'SecureActionButtonTemplate')
-	btn:RegisterForClicks('AnyUp', 'AnyDown')
-	btn:SetAllPoints(button)
-	btn:SetSize(button:GetSize())
-	btn:HookScript('OnEnter', SecureOnEnter)
-	btn:HookScript('OnLeave', SecureOnLeave)
-	S:HandleButton(btn)
-
-	for key, value in next, attributes do
-		btn:SetAttribute(key, value)
-	end
-
-	local txt = btn:CreateFontString(nil, 'OVERLAY')
-	txt:Point('CENTER', 0, 1)
-	txt:FontTemplate(nil, nil, 'SHADOW')
-	txt:SetJustifyH('CENTER')
-	txt:SetText(text)
-
-	btn.text = txt
-	btn:SetFontString(txt)
-	btn:SetTemplate(nil, true)
-
-	SecureOnLeave(btn)
-
-	return btn
-end
-
-function E:StaticPopup_GetAllSecureButtons()
-	return SecureButtons
-end
-
-function E:StaticPopup_GetSecureButton(which)
-	return SecureButtons[which]
-end
-
-function E:StaticPopup_PositionSecureButton(popup, popupButton, secureButton)
-	secureButton:SetParent(popup)
-	secureButton:SetAllPoints(popupButton)
-	secureButton:SetSize(popupButton:GetSize())
-end
-
-function E:StaticPopup_SetSecureButton(which, btn)
-	if SecureButtons[which] then
-		error('A secure StaticPopup Button called `'..which..'` already exists.')
-	end
-
-	SecureButtons[which] = btn
 end
 
 function E:StaticPopup_HandleButton(button)

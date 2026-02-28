@@ -143,6 +143,12 @@ local function Point(obj, arg1, arg2, arg3, arg4, arg5, ...)
 end
 
 
+function E:SetPointsRestricted(frame)
+	if frame and not pcall(frame.GetPoint, frame) then
+		return true
+	end
+end
+
 local function SetOutside(obj, anchor, xOffset, yOffset, anchor2, noScale)
 	if not anchor then anchor = obj:GetParent() end
 
