@@ -60,9 +60,7 @@ E.Skins  = E:NewModule('Skins',  'AceTimer-3.0', 'AceHook-3.0', 'AceEvent-3.0')
 | `Core/Defaults/Profile.lua` | Profile defaults (`P.chat`, `P.general`) |
 | `Core/Defaults/Private.lua` | Private (per-machine) defaults |
 | `Core/Defaults/Global.lua` | Global (cross-profile) defaults |
-| `Skins/Battlenet.lua` | BNet chat skin |
 | `Skins/ChatConfig.lua` | Chat config frame skin |
-| `Skins/CombatLog.lua` | Combat log skin |
 
 ### Namespace Pattern (top of EVERY file)
 ```lua
@@ -96,9 +94,7 @@ Source lives at `OriginSource/ElvUI/` (read-only reference). When syncing:
 |---|---|---|
 | `ElvUI_Mainline.toc` | `ElvUIChat.toc` | Interface version only |
 | `Game/Shared/Modules/Chat/Chat.lua` | `Core/Modules/Chat/Chat.lua` | Copy + namespace fix |
-| `Game/Mainline/Skins/Battlenet.lua` | `Skins/Battlenet.lua` | Copy + namespace fix |
 | `Game/Mainline/Skins/ChatConfig.lua` | `Skins/ChatConfig.lua` | Copy + namespace fix |
-| `Game/Mainline/Skins/CombatLog.lua` | `Skins/CombatLog.lua` | Copy + namespace fix |
 
 **3-step namespace conversion (PowerShell):**
 ```powershell
@@ -126,7 +122,7 @@ C_KeyBindings.GetMouseButtonName()   -- was GetMouseButtonName()
 
 1. **Namespace confusion**: Every file must use `unpack(ElvUIChat)` — never `unpack(ElvUI)`
 2. **SetCVar**: 2 args only `(cvar, value)`, not 3
-3. **Module references**: `E:GetModule()` only for Chat, Layout, Skins, Blizzard, AFK
+3. **Module references**: `E:GetModule()` only for Chat, Layout, Skins
 4. **`ElvUIChatCharacterDB` timing**: May not exist on first login — always check/create in `OnInitialize`
 5. **Over-including**: Don't pull in code referencing `E.UnitFrames`, `E.ActionBars`, `E.NamePlates`, etc.
 
