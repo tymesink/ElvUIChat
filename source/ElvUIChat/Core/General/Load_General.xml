@@ -6,6 +6,5 @@
 	<Script file='Toolkit.lua'/>
 	<Script file='StaticPopups.lua'/>
 	<Script file='Config.lua'/>
-	<Script file='Dropdown.lua'/>
 	<Script file='Options.lua'/>
 </Ui>
