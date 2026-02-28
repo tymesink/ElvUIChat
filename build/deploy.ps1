@@ -39,6 +39,7 @@ if (Test-Path $TargetDir) {
 
 # Deploy
 Write-Host "Deploying addon..." -ForegroundColor Green
+New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
 Copy-Item -Path "$SourcePath\*" -Destination $TargetDir -Recurse -Force
 
 # Verify
@@ -46,11 +47,11 @@ if (Test-Path "$TargetDir\ElvUIChat.toc") {
     $tocVersion = Select-String -Path "$TargetDir\ElvUIChat.toc" -Pattern "## Interface: (\d+)" | ForEach-Object { $_.Matches.Groups[1].Value }
     $addonVersion = Select-String -Path "$TargetDir\ElvUIChat.toc" -Pattern "## Version: ([\d.]+)" | ForEach-Object { $_.Matches.Groups[1].Value }
     
-    Write-Host "`n✓ Deployment successful!" -ForegroundColor Green
+    Write-Host "`nDeployment successful!" -ForegroundColor Green
     Write-Host "  Interface: $tocVersion" -ForegroundColor Gray
     Write-Host "  Version: $addonVersion" -ForegroundColor Gray
     Write-Host "`nReady to test in-game with /reload" -ForegroundColor Cyan
 } else {
-    Write-Host "`n✗ Deployment failed - TOC file not found in target" -ForegroundColor Red
+    Write-Host "`nDeployment failed - TOC file not found in target" -ForegroundColor Red
     exit 1
 }
