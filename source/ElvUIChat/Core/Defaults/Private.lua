@@ -22,9 +22,7 @@ V.skins = {
 	parchmentRemoverEnable = false,
 	blizzard = {
 		enable = true,
-		-- ElvUIChat: Only keeping skins we actually use for chat
 		blizzardOptions = true, -- ChatConfig.lua (chat settings UI)
-		misc = true,            -- Battlenet.lua (BNet toast frame)
 		tooltip = true,         -- Ace3.lua (tooltips)
 	}
 }
