@@ -1,7 +1,7 @@
 ## Title: |cff1784d1ElvUIChat|r
 ## Notes: Chat Window Enhancement (Personal Build)
 ## Author: Elv, Simpy
-## Version: 1.24
+## Version: 1.25
 ## SavedVariables: ElvUIChatDB, ElvUIChatPrivateDB
 ## SavedVariablesPerCharacter: ElvUIChatCharacterDB
 ## OptionalDeps: SharedMedia

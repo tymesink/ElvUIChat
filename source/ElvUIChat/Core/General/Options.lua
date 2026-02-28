@@ -6,41 +6,11 @@ local C = { Blank = function() return '' end }
 E.ConfigOptions = C
 
 local _G = _G
-local sort, strmatch = sort, strmatch
-local format, gsub, ipairs, pairs = format, gsub, ipairs, pairs
+local format, gsub, pairs = format, gsub, pairs
 local wipe = wipe
 
 C.Values = {
-	FontFlags = {
-		NONE = 'None',
-		OUTLINE = 'Outline',
-		THICKOUTLINE = 'Thick',
-		MONOCHROME = '|cffaaaaaaMono|r',
-		MONOCHROMEOUTLINE = '|cffaaaaaaMono|r Outline',
-		MONOCHROMETHICKOUTLINE = '|cffaaaaaaMono|r Thick',
-	},
 	FontSize = { min = 8, max = 64, step = 1 },
-	Strata = { BACKGROUND = 'BACKGROUND', LOW = 'LOW', MEDIUM = 'MEDIUM', HIGH = 'HIGH', DIALOG = 'DIALOG', TOOLTIP = 'TOOLTIP' },
-	GrowthDirection = {
-		DOWN_RIGHT = format('%s and then %s', 'Down', 'Right'),
-		DOWN_LEFT = format('%s and then %s', 'Down', 'Left'),
-		UP_RIGHT = format('%s and then %s', 'Up', 'Right'),
-		UP_LEFT = format('%s and then %s', 'Up', 'Left'),
-		RIGHT_DOWN = format('%s and then %s', 'Right', 'Down'),
-		RIGHT_UP = format('%s and then %s', 'Right', 'Up'),
-		LEFT_DOWN = format('%s and then %s', 'Left', 'Down'),
-		LEFT_UP = format('%s and then %s', 'Left', 'Up'),
-	},
-	AllPoints = { TOPLEFT = 'TOPLEFT', LEFT = 'LEFT', BOTTOMLEFT = 'BOTTOMLEFT', RIGHT = 'RIGHT', TOPRIGHT = 'TOPRIGHT', BOTTOMRIGHT = 'BOTTOMRIGHT', TOP = 'TOP', BOTTOM = 'BOTTOM', CENTER = 'CENTER' },
-	Anchors = { TOPLEFT = 'TOPLEFT', LEFT = 'LEFT', BOTTOMLEFT = 'BOTTOMLEFT', RIGHT = 'RIGHT', TOPRIGHT = 'TOPRIGHT', BOTTOMRIGHT = 'BOTTOMRIGHT', TOP = 'TOP', BOTTOM = 'BOTTOM' },
-	SmartAuraPositions = {
-		DISABLED = 'Disable',
-		BUFFS_ON_DEBUFFS = 'Buffs on Debuffs',
-		DEBUFFS_ON_BUFFS = 'Debuffs on Buffs',
-		FLUID_BUFFS_ON_DEBUFFS = 'Fluid Buffs on Debuffs',
-		FLUID_DEBUFFS_ON_BUFFS = 'Fluid Debuffs on Buffs',
-	},
-	Roman = { 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX' } -- 1 to 20
 }
 
 -- Function we can call on profile change to update GUI
