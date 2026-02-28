@@ -23,6 +23,7 @@ P.chat = {
 	panelSnapLeftID = nil, -- set by the snap code
 	panelSnapping = true,
 	shortChannels = true,
+	hideChannels = false,
 	hyperlinkHover = true,
 	throttleInterval = 45,
 	scrollDownInterval = 15,
