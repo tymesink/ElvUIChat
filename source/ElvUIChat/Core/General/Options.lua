@@ -59,6 +59,9 @@ function E:LoadConfigOptions_Chat()
     General.args.sticky = ACH:Toggle('Sticky Chat', 'When opening the Chat Editbox to type a message having this option set means it will retain the last channel you spoke in. If this option is turned off opening the Chat Editbox should always default to the SAY channel.', 5)
     General.args.emotionIcons = ACH:Toggle('Emotion Icons', 'Display emotion icons in chat.', 6)
     General.args.lfgIcons = ACH:Toggle('Role Icon', 'Display LFG Icons in group chat.', 7, nil, nil, nil, nil, function(info, value) E.db.chat.lfgIcons = value CH:CheckLFGRoles() end) -- Retail
+    General.args.mentorshipIcon = ACH:Toggle('Mentor Icons', 'Display guide and newcomer mentor icons in chat.', 7.1) -- Retail
+    General.args.timerunningIcon = ACH:Toggle('Timerunning Icon', 'Display the timerunning icon in chat for Timerunning players.', 7.2) -- Retail
+    General.args.recentAllyIcon = ACH:Toggle('Recent Ally Icon', 'Display the recent ally icon in chat for recent ally players.', 7.3) -- Retail
     General.args.useAltKey = ACH:Toggle('Use Alt Key', 'Require holding the Alt key down to move cursor or cycle through messages in the editbox.', 8, nil, nil, nil, nil, function(info, value) E.db.chat.useAltKey = value CH:UpdateSettings() end)
     General.args.autoClosePetBattleLog = ACH:Toggle('Auto-Close Pet Battle Log', nil, 9) -- Retail
     General.args.useBTagName = ACH:Toggle('Use Real ID BattleTag', 'Use BattleTag instead of Real ID names in chat. Chat History will always use BattleTag.', 10)
