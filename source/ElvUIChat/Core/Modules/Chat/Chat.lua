@@ -3731,8 +3731,7 @@ function CH:VoiceOverlay(event, ...)
 		local memberID, channelID, volume = ...
 		local frame = CH:GetHeadByID(memberID)
 		if frame and channelID == frame.channelID then
-			frame.StatusBar.anim.progress:SetChange(volume)
-			frame.StatusBar.anim.progress:Play()
+			frame.StatusBar:SetValue(volume)
 
 			frame.StatusBar:SetStatusBarColor(E:ColorGradient(volume, 1, 0, 0, 1, 1, 0, 0, 1, 0))
 		end
@@ -4088,11 +4087,6 @@ function CH:Initialize()
 		chatHead.StatusBar:CreateBackdrop()
 		chatHead.StatusBar:SetStatusBarTexture(E.media.normTex)
 		chatHead.StatusBar:SetMinMaxValues(0, 1)
-
-		chatHead.StatusBar.anim = _G.CreateAnimationGroup(chatHead.StatusBar)
-		chatHead.StatusBar.anim.progress = chatHead.StatusBar.anim:CreateAnimation('Progress')
-		chatHead.StatusBar.anim.progress:SetEasing('Out')
-		chatHead.StatusBar.anim.progress:SetDuration(.3)
 
 		chatHead:Hide()
 		CH.ChatHeadFrame[i] = chatHead

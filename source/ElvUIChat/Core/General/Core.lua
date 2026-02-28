@@ -1330,8 +1330,8 @@ function E:Initialize()
 	E:BuildAbbreviateConfigs()
 	E:LoadAPI()
 	E:LoadCommands()
-	E:InitializeModules()
 	E:UpdateMedia()
+	E:InitializeModules()
 
 	if E.UpdateCustomClassColors then
 		E:UpdateCustomClassColors()
