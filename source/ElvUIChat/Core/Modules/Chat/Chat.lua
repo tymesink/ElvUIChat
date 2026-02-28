@@ -1440,7 +1440,6 @@ end
 function CH:RefreshToggleButtons()
 	local toggle = _G.LeftChatToggleButton
 	if toggle then
-		toggle:SetAlpha(E.db.LeftChatPanelFaded and CH.db.fadeChatToggles and 0 or 1)
 		toggle:SetShown(false)
 	end
 end

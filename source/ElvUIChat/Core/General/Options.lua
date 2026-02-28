@@ -145,8 +145,6 @@ function E:LoadConfigOptions_Chat()
 
     Panels.args.fadeUndockedTabs = ACH:Toggle('Fade Undocked Tabs', 'Fades the text on chat tabs that are not docked at the left or right chat panel.', 1, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:UpdateChatTabs() end, nil, function() return not E.Chat.Initialized end)
     Panels.args.fadeTabsNoBackdrop = ACH:Toggle('Fade Tabs No Backdrop', 'Fades the text on chat tabs that are docked in a panel where the backdrop is disabled.', 2, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:UpdateChatTabs() end, nil, function() return not E.Chat.Initialized end)
-    Panels.args.hideChatToggles = ACH:Toggle('Hide Chat Toggles', nil, 3, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:RefreshToggleButtons() LO:RepositionChatDataPanels() end)
-    Panels.args.fadeChatToggles = ACH:Toggle('Fade Chat Toggles', 'Fades the buttons that toggle chat windows when that window has been toggled off.', 4, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]]= value CH:RefreshToggleButtons() end, function() return E.db.chat.hideChatToggles end)
 
     Panels.args.tabGroup = ACH:Group('Tab Panels', nil, 10, nil, nil, nil, nil, function() return not E.Chat.Initialized end)
     Panels.args.tabGroup.inline = true
