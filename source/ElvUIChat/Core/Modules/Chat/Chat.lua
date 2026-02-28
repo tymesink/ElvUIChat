@@ -1283,9 +1283,9 @@ function CH:UpdateEditboxAnchors(cvar, value)
 	end
 
 	local classic = value == 'classic'
-	local panel = 22
+	local panel = 0 -- no datatexts panels in this addon, no inset needed
 
-	local showLeftPanel = E.db.datatexts and E.db.datatexts.panels and E.db.datatexts.panels.LeftChatDataPanel and E.db.datatexts.panels.LeftChatDataPanel.enable
+	local showLeftPanel = false
 	local aboveInside = CH.db.editBoxPosition == 'ABOVE_CHAT_INSIDE'
 	local belowInside = CH.db.editBoxPosition == 'BELOW_CHAT_INSIDE'
 	local below = CH.db.editBoxPosition == 'BELOW_CHAT'
