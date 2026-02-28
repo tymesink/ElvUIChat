@@ -39,7 +39,6 @@ local C_ChatInfo_SendAddonMessage = C_ChatInfo.SendAddonMessage
 
 --Modules (ElvUIChat: Only load modules we have)
 local AFK = E:GetModule('AFK')
-local Blizzard = E:GetModule('Blizzard')
 local Chat = E:GetModule('Chat')
 local Layout = E:GetModule('Layout')
 local Skins = E:GetModule('Skins')

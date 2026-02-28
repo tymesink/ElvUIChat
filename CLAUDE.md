@@ -40,15 +40,14 @@ Real errors to fix: `'end' expected`, `'<eof>' expected near 'end'`, unmatched b
 init.lua → Templates.xml → Locales → Media → Defaults → General → Layout → Modules
 ```
 
-### Modules (only these five exist)
+### Modules (only these four exist)
 ```lua
-E.AFK      = E:NewModule('AFK',      'AceEvent-3.0', 'AceTimer-3.0')
-E.Blizzard = E:NewModule('Blizzard', 'AceEvent-3.0', 'AceHook-3.0')
-E.Chat     = E:NewModule('Chat',     'AceTimer-3.0', 'AceHook-3.0', 'AceEvent-3.0')
-E.Layout   = E:NewModule('Layout',   'AceEvent-3.0')
-E.Skins    = E:NewModule('Skins',    'AceTimer-3.0', 'AceHook-3.0', 'AceEvent-3.0')
+E.AFK    = E:NewModule('AFK',    'AceEvent-3.0', 'AceTimer-3.0')
+E.Chat   = E:NewModule('Chat',   'AceTimer-3.0', 'AceHook-3.0', 'AceEvent-3.0')
+E.Layout = E:NewModule('Layout', 'AceEvent-3.0')
+E.Skins  = E:NewModule('Skins',  'AceTimer-3.0', 'AceHook-3.0', 'AceEvent-3.0')
 ```
-`E:GetModule()` calls in any file must only reference these five.
+`E:GetModule()` calls in any file must only reference these four.
 
 ### Key Files
 | File | Purpose |

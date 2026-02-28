@@ -45,7 +45,6 @@ Engine[5] = E.DF.global
 _G.ElvUIChat = Engine
 
 E.AFK = E:NewModule('AFK','AceEvent-3.0','AceTimer-3.0')
-E.Blizzard = E:NewModule('Blizzard','AceEvent-3.0','AceHook-3.0')
 E.Chat = E:NewModule('Chat','AceTimer-3.0','AceHook-3.0','AceEvent-3.0')
 E.Layout = E:NewModule('Layout','AceEvent-3.0')
 E.Skins = E:NewModule('Skins','AceTimer-3.0','AceHook-3.0','AceEvent-3.0')
