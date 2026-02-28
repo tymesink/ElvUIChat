@@ -32,7 +32,7 @@ local CallbackHandler = _G.LibStub('CallbackHandler-1.0')
 local AddOnName, Engine = ...
 local E = AceAddon:NewAddon(AddOnName, 'AceConsole-3.0', 'AceEvent-3.0', 'AceTimer-3.0', 'AceHook-3.0')
 E.DF = {profile = {}, global = {}}; E.privateVars = {profile = {}} -- Defaults
-E.Options = {type = 'group', args = {}, childGroups = 'ElvUIChat_HiddenTree'}
+E.Options = {type = 'group', args = {}, childGroups = 'tab'}
 E.callbacks = E.callbacks or CallbackHandler:New(E)
 E.wowpatch, E.wowbuild, E.wowdate, E.wowtoc = GetBuildInfo()
 E.locale = GetLocale()
@@ -66,7 +66,6 @@ end
 -- ElvUIChat: Initialize tables early so General files can use them
 E.RegisteredModules = {}
 E.RegisteredInitialModules = {}
-E.OtherAddons = {} -- Track other installed addons (Tukui, etc.)
 E.TexCoords = {0, 1, 0, 1}
 E.valueColorUpdateFuncs = setmetatable({}, {
 	__newindex = function(_, key, value)
@@ -138,9 +137,6 @@ do
 	E:AddLib('AceConfigDialog', 'AceConfigDialog-3.0-ElvUIChat')
 	E:AddLib('AceConfigRegistry', 'AceConfigRegistry-3.0-ElvUIChat')
 	E:AddLib('AceDBOptions', 'AceDBOptions-3.0')
-
-	-- Retail only - always load DualSpec
-	E:AddLib('DualSpec', 'LibDualSpec-1.0')
 
 	-- backwards compatible
 	E.LSM = E.Libs.LSM

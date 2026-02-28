@@ -301,7 +301,7 @@ function E:UpdateMedia(mediaType)
 
 	E.media.normFont = LSM:Fetch('font', E.db.general.font)
 	E.media.combatFont = LSM:Fetch('font', E.private.general.dmgfont)
-	E.media.blankTex = LSM:Fetch('background', 'ElvUI Blank')
+	E.media.blankTex = LSM:Fetch('background', 'ElvUIChat Blank')
 	E.media.normTex = LSM:Fetch('statusbar', E.private.general.normTex)
 	E.media.glossTex = LSM:Fetch('statusbar', E.private.general.glossTex)
 
@@ -1336,61 +1336,56 @@ function E:Initialize()
 	E:UIScale()
 	E:LoadStaticPopups()
 
-	-- Retail-only: DualSpec enhancement (currently disabled)
-	--E.Libs.DualSpec:EnhanceDatabase(E.data, 'ElvUI')
+	E:BuildPrefixValues()
+	E:BuildAbbreviateConfigs()
+	E:LoadAPI()
+	E:LoadCommands()
+	E:InitializeModules()
+	E:UpdateMedia()
 
-	if E.OtherAddons.Tukui then
-		E:StaticPopup_Show('TUKUI_ELVUI_INCOMPATIBLE')
-	else
-		E:BuildPrefixValues()
-		E:BuildAbbreviateConfigs()
-		E:LoadAPI()
-		E:LoadCommands()
-		E:InitializeModules()
-		E:UpdateMedia()
+	if E.UpdateCustomClassColors then
+		E:UpdateCustomClassColors()
+	end
 
-		if E.UpdateCustomClassColors then
-			E:UpdateCustomClassColors()
+	E.initialized = true
+
+	E:LoadConfigOptions()
+
+	-- ElvUIChat: Retail-only, always call Tutorials
+	if E.Tutorials then
+		E:Tutorials()
+	end
+
+	if E.db.general.tagUpdateRate and (E.db.general.tagUpdateRate ~= P.general.tagUpdateRate) then
+		E:TagUpdateRate(E.db.general.tagUpdateRate)
+	end
+
+	if E.db.general.smoothingAmount and (E.db.general.smoothingAmount ~= P.general.smoothingAmount) then
+		E:SetSmoothingAmount(E.db.general.smoothingAmount)
+	end
+
+	if not E.private.install_complete then
+		-- ElvUIChat: Simple install - just mark as complete, chat works with defaults
+		E.private.install_complete = E.version
+	end
+
+	-- TODO: skip UPDATE_REQUEST popup in chat-only build
+	E.updateRequestTriggered = false
+
+	if GetCVarBool('taintLog') then
+		E:StaticPopup_Show('TAINT_LOG')
+	elseif GetCVarBool('scriptProfile') then
+		E:StaticPopup_Show('SCRIPT_PROFILE')
+	end
+
+	if E.db.general.loginmessage then
+		local msg, _ = format(L["LOGIN_MSG"], E.versionString)
+
+		if Chat.Initialized then -- setup the link
+			_, msg = Chat:FindURL('CHAT_MSG_DUMMY', msg)
 		end
 
-		E.initialized = true
-
-		-- ElvUIChat: Retail-only, always call Tutorials
-		if E.Tutorials then
-			E:Tutorials()
-		end
-
-		if E.db.general.tagUpdateRate and (E.db.general.tagUpdateRate ~= P.general.tagUpdateRate) then
-			E:TagUpdateRate(E.db.general.tagUpdateRate)
-		end
-
-		if E.db.general.smoothingAmount and (E.db.general.smoothingAmount ~= P.general.smoothingAmount) then
-			E:SetSmoothingAmount(E.db.general.smoothingAmount)
-		end
-
-		if not E.private.install_complete then
-			-- ElvUIChat: Simple install - just mark as complete, chat works with defaults
-			E.private.install_complete = E.version
-		end
-
-		-- TODO: skip UPDATE_REQUEST popup in chat-only build
-		E.updateRequestTriggered = false
-
-		if GetCVarBool('taintLog') then
-			E:StaticPopup_Show('TAINT_LOG')
-		elseif GetCVarBool('scriptProfile') then
-			E:StaticPopup_Show('SCRIPT_PROFILE')
-		end
-
-		if E.db.general.loginmessage then
-			local msg, _ = format(L["LOGIN_MSG"], E.versionString)
-
-			if Chat.Initialized then -- setup the link
-				_, msg = Chat:FindURL('CHAT_MSG_DUMMY', msg)
-			end
-
-			print(msg)
-			print(L["LOGIN_MSG_HELP"])
-		end
+		print(msg)
+		print(L["LOGIN_MSG_HELP"])
 	end
 end

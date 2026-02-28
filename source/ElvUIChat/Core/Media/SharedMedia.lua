@@ -170,7 +170,6 @@ AddMedia('texture','SkullIcon')
 AddMedia('texture','Smooth')
 AddMedia('texture','Spark')
 AddMedia('texture','Tank')
-AddMedia('texture','TukuiLogo')
 
 AddMedia('emoji','Angry')
 AddMedia('emoji','Blush')

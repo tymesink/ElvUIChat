@@ -135,25 +135,6 @@ E.PopupDialogs.CONFIRM_LOSE_BINDING_CHANGES = {
 	showAlert = 1,
 }
 
-E.PopupDialogs.TUKUI_ELVUI_INCOMPATIBLE = {
-	text = L["Oh lord, you have got ElvUI and Tukui both enabled at the same time. Select an addon to disable."],
-	OnAccept = function()
-		for addon in next, E.Status_Addons do
-			DisableAddOn(addon, E.myguid)
-		end
-
-		ReloadUI()
-	end,
-	OnCancel = function()
-		DisableAddOn('Tukui', E.myguid)
-		ReloadUI()
-	end,
-	button1 = 'ElvUI',
-	button2 = 'Tukui',
-	whileDead = 1,
-	hideOnEscape = false,
-}
-
 E.PopupDialogs.DISABLE_INCOMPATIBLE_ADDON = {
 	text = L["Do you swear not to post in technical support about something not working without first disabling the addon/module combination first?"],
 	OnAccept = function()
@@ -246,12 +227,7 @@ E.PopupDialogs.RESET_UF_UNIT = {
 				UF:CreateAndUpdateHeaderGroup(data.unit, nil, nil, true)
 			end
 
-			if IsAddOnLoaded('ElvUI_Options') then
-				local ACD = E.Libs.AceConfigDialog
-				if ACD and ACD.OpenFrames and ACD.OpenFrames.ElvUI then
-					ACD:SelectGroup('ElvUI', 'unitframe', data.unit)
-				end
-			end
+			-- ElvUIChat: UnitFrames not present in this addon, nothing to navigate to
 		else
 			E:Print(L["Error resetting UnitFrame."])
 		end
@@ -395,16 +371,14 @@ function E:StaticPopup_OnShow()
 	end
 
 	-- boost static popups over ace gui
-	if IsAddOnLoaded('ElvUI_Options') then
-		local ACD = E.Libs.AceConfigDialog
-		if ACD and ACD.OpenFrames and ACD.OpenFrames.ElvUI then
-			self.frameStrataIncreased = true
-			self:SetFrameStrata('FULLSCREEN_DIALOG')
+	local ACD = E.Libs.AceConfigDialog
+	if ACD and ACD.OpenFrames and ACD.OpenFrames.ElvUIChat then
+		self.frameStrataIncreased = true
+		self:SetFrameStrata('FULLSCREEN_DIALOG')
 
-			local popupFrameLevel = self:GetFrameLevel()
-			if popupFrameLevel < 100 then
-				self:SetFrameLevel(popupFrameLevel+100)
-			end
+		local popupFrameLevel = self:GetFrameLevel()
+		if popupFrameLevel < 100 then
+			self:SetFrameLevel(popupFrameLevel + 100)
 		end
 	end
 end
@@ -1323,9 +1297,7 @@ function E:LoadStaticPopups()
 			popup.checkButton:SetScript('OnClick', E.StaticPopup_CheckButtonOnClick)
 			popup.checkButton:Size(24)
 
-			if not E.OtherAddons.Tukui then
-				S:HandleCheckBox(popup.checkButton)
-			end
+			S:HandleCheckBox(popup.checkButton)
 
 			popup.checkButtonText = _G[name..'CheckButtonText']
 
@@ -1348,7 +1320,7 @@ function E:LoadStaticPopups()
 		end
 
 		local moneyInputFrame = popup.moneyInputFrame
-		if moneyInputFrame and not E.OtherAddons.Tukui then
+		if moneyInputFrame then
 			S:HandleEditBox(moneyInputFrame.gold)
 			S:HandleEditBox(moneyInputFrame.silver)
 			S:HandleEditBox(moneyInputFrame.copper)
@@ -1363,13 +1335,11 @@ function E:LoadStaticPopups()
 			editBox:SetScript('OnTextChanged', E.StaticPopup_EditBoxOnTextChanged)
 			editBox:OffsetFrameLevel(1)
 
-			if not E.OtherAddons.Tukui then
-				S:HandleEditBox(editBox)
+			S:HandleEditBox(editBox)
 
-				if not editBox.NineSlice then
-					editBox.backdrop:Point('TOPLEFT', -2, -4)
-					editBox.backdrop:Point('BOTTOMRIGHT', 2, 4)
-				end
+			if not editBox.NineSlice then
+				editBox.backdrop:Point('TOPLEFT', -2, -4)
+				editBox.backdrop:Point('BOTTOMRIGHT', 2, 4)
 			end
 		end
 

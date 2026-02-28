@@ -6,9 +6,9 @@ local C = { Blank = function() return '' end }
 E.ConfigOptions = C
 
 local _G = _G
-local sort, strmatch, strsplit = sort, strmatch, strsplit
+local sort, strmatch = sort, strmatch
 local format, gsub, ipairs, pairs = format, gsub, ipairs, pairs
-local tconcat, tinsert, tremove = table.concat, tinsert, tremove
+local wipe = wipe
 
 C.Values = {
 	FontFlags = {
@@ -43,75 +43,7 @@ C.Values = {
 	Roman = { 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX' } -- 1 to 20
 }
 
-do
-	C.StateSwitchGetText = function(_, TEXT)
-		local friend, enemy = strmatch(TEXT, '^Friendly:([^,]*)'), strmatch(TEXT, '^Enemy:([^,]*)')
-			local text = friend or enemy or TEXT
-			local blockB, blockS, blockT
-		local SF, localized = E.global.unitframe.specialFilters[text], L[text]
-		if SF and localized and text:match('^block') then blockB, blockS, blockT = localized:match('^%[(.-)](%s?)(.+)') end
-		local filterText = (blockB and format('|cFF999999%s|r%s%s', blockB, blockS, blockT)) or localized or text
-		return (friend and format('|cFF33FF33%s|r %s', _G.FRIEND, filterText)) or (enemy and format('|cFFFF3333%s|r %s', _G.ENEMY, filterText)) or filterText
-	end
-
-	local function filterMatch(s,v)
-		local m1, m2, m3, m4 = '^'..v..'$', '^'..v..',', ','..v..'$', ','..v..','
-		return (strmatch(s, m1) and m1) or (strmatch(s, m2) and m2) or (strmatch(s, m3) and m3) or (strmatch(s, m4) and v..',')
-	end
-
-	C.SetFilterPriority = function(db, groupName, auraType, value, remove, movehere, friendState)
-		if not auraType or not value then return end
-		local filter = db[groupName] and db[groupName][auraType] and db[groupName][auraType].priority
-		if not filter then return end
-		local found = filterMatch(filter, E:EscapeString(value))
-		if found and movehere then
-			local tbl = {strsplit(',', filter)}
-			local sv, sm
-			for i in ipairs(tbl) do
-				if tbl[i] == value then sv = i elseif tbl[i] == movehere then sm = i end
-				if sv and sm then break end
-			end
-			tremove(tbl, sm)
-			tinsert(tbl, sv, movehere)
-			db[groupName][auraType].priority = tconcat(tbl,',')
-		elseif found and friendState then
-			local realValue = strmatch(value, '^Friendly:([^,]*)') or strmatch(value, '^Enemy:([^,]*)') or value
-			local friend = filterMatch(filter, E:EscapeString('Friendly:'..realValue))
-			local enemy = filterMatch(filter, E:EscapeString('Enemy:'..realValue))
-			local default = filterMatch(filter, E:EscapeString(realValue))
-
-			local state =
-				(friend and (not enemy) and format('%s%s','Enemy:',realValue))					--[x] friend [ ] enemy: > enemy
-			or	((not enemy and not friend) and format('%s%s','Friendly:',realValue))			--[ ] friend [ ] enemy: > friendly
-			or	(enemy and (not friend) and default and format('%s%s','Friendly:',realValue))	--[ ] friend [x] enemy: (default exists) > friendly
-			or	(enemy and (not friend) and strmatch(value, '^Enemy:') and realValue)			--[ ] friend [x] enemy: (no default) > realvalue
-			or	(friend and enemy and realValue)												--[x] friend [x] enemy: > default
-
-			if state then
-				local stateFound = filterMatch(filter, E:EscapeString(state))
-				if not stateFound then
-					local tbl = {strsplit(',', filter)}
-					local sv
-					for i in ipairs(tbl) do
-						if tbl[i] == value then
-							sv = i
-							break
-						end
-					end
-					tinsert(tbl, sv, state)
-					tremove(tbl, sv+1)
-					db[groupName][auraType].priority = tconcat(tbl,',')
-				end
-			end
-		elseif found and remove then
-			db[groupName][auraType].priority = gsub(filter, found, '')
-		elseif not found and not remove then
-			db[groupName][auraType].priority = (filter == '' and value) or (filter..','..value)
-		end
-	end
-end
-
--- --Function we can call on profile change to update GUI
+-- Function we can call on profile change to update GUI
 function E:RefreshGUI()
 	E.Libs.AceConfigRegistry:NotifyChange('ElvUIChat')
 end
@@ -119,54 +51,24 @@ end
 function E:LoadConfigOptions()
 	E.Libs.AceConfig:RegisterOptionsTable('ElvUIChat', E.Options)
 	E.Libs.AceConfigDialog:SetDefaultSize('ElvUIChat', E:Config_GetDefaultSize())
-	E.Options.name = format('%s: |cff99ff33%.2f|r', 'Version', E.version)
+	E.Libs.AceConfigDialog:AddToBlizOptions('ElvUIChat', 'ElvUIChat')
+	E.Options.name = format('%s: |cff99ff33%s|r', 'Version', E.versionString)
 	E:LoadConfigOptions_Core()
 	E:LoadConfigOptions_Chat()
+	E:PatchAceTooltip()
 end
 
 function E:LoadConfigOptions_Core()
-	E.Options.args.info = ACH:Group('Information', nil, 4)
-	E.Options.args.info.args.header = ACH:Description('|cffff8000ElvUI|r is a complete User Interface replacement addon for World of Warcraft.', 1, 'medium')
-	E.Options.args.info.args.spacer = ACH:Spacer(2)
-
-	local profileTypeItems = {
-		profile = 'Profile',
-		private = 'Private (Character Settings)',
-		global = 'Global (Account Settings)',
-	}
-	local profileTypeListOrder = { 'profile', 'private', 'global' }
-
 	--Create Profiles Table
 	E.Options.args.profiles = ACH:Group('Profiles', nil, 4, 'tab')
 	E.Options.args.profiles.args.desc = ACH:Description('This feature will allow you to transfer settings to other characters.', 0)
 	E.Options.args.profiles.args.spacer = ACH:Spacer(6)
 
 	E.Options.args.profiles.args.profile = E.Libs.AceDBOptions:GetOptionsTable(E.data)
-	E.Options.args.profiles.args.private = E.Libs.AceDBOptions:GetOptionsTable(E.charSettings)
-
 	E.Options.args.profiles.args.profile.name = 'Profile'
 	E.Options.args.profiles.args.profile.order = 1
-	E.Options.args.profiles.args.private.name = 'Private'
-	E.Options.args.profiles.args.private.order = 2
 
 	E.Libs.AceConfig:RegisterOptionsTable('ElvProfiles', E.Options.args.profiles.args.profile)
-
-	-- ElvUIChat: Always enhance DualSpec options (Retail-only)
-	E.Libs.DualSpec:EnhanceOptions(E.Options.args.profiles.args.profile, E.data)
-
-	E.Libs.AceConfig:RegisterOptionsTable('ElvPrivates', E.Options.args.profiles.args.private)
-
-	E.Options.args.profiles.args.private.args.choose.confirm = function(info, value)
-		if info[#info-1] == 'private' then
-			return format('Choosing Settings %s. This will reload the UI.\n\n Are you sure?', value)
-		else
-			return false
-		end
-	end
-
-	E.Options.args.profiles.args.private.args.copyfrom.confirm = function(info, value)
-		return format('Copy settings from %s. This will overwrite %s profile.\n\n Are you sure?', value, info.handler:GetCurrentProfile())
-	end
 end
 
 function E:LoadConfigOptions_Chat()
