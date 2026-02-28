@@ -4,7 +4,6 @@ local S = E:GetModule('Skins')
 local next = next
 local gsub = gsub
 local ipairs = ipairs
-local format = format
 local unpack = unpack
 local tinsert = tinsert
 local strmatch = strmatch
@@ -507,15 +506,6 @@ function S:Ace3_MetaIndex(k, v)
 	else
 		rawset(self, k, v)
 	end
-end
-
-function S:Ace3_ColorizeEnable(L)
-	S.Ace3_L = L
-
-	-- Special Enable Coloring
-	S.Ace3_EnableMatch = '^|?c?[Ff]?[Ff]?%x?%x?%x?%x?%x?%x?' .. E:EscapeString(S.Ace3_L.Enable) .. '|?r?$'
-	S.Ace3_EnableOff = format('|cffff3333%s|r', S.Ace3_L.Enable)
-	S.Ace3_EnableOn = format('|cff33ff33%s|r', S.Ace3_L.Enable)
 end
 
 local lastMinor = 0
