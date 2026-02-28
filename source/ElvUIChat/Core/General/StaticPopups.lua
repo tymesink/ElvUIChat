@@ -1,9 +1,4 @@
 local E, L, V, P, G = unpack(ElvUIChat)
--- Modules we don't have - make them nil-safe
-local AB = E.GetModule and E:GetModule('ActionBars', true)
-local UF = E.GetModule and E:GetModule('UnitFrames', true)
-local NP = E.GetModule and E:GetModule('NamePlates', true)
-local M = E.GetModule and E:GetModule('Misc', true)
 local S = E:GetModule('Skins')
 
 local _G = _G
@@ -12,9 +7,7 @@ local pairs, type, unpack, assert, ceil, error = pairs, type, unpack, assert, ce
 local tremove, tContains, tinsert = tremove, tContains, tinsert
 
 local CreateFrame = CreateFrame
-local MoneyFrame_Update = MoneyFrame_Update
 local UnitIsDeadOrGhost, InCinematic = UnitIsDeadOrGhost, InCinematic
-local PurchaseSlot, GetBankSlotCost = PurchaseSlot, GetBankSlotCost
 local ReloadUI, PlaySound, StopMusic = ReloadUI, PlaySound, StopMusic
 local GetBindingFromClick = GetBindingFromClick
 
@@ -119,21 +112,6 @@ E.PopupDialogs.UPDATE_REQUEST = {
 	showAlert = 1,
 }
 
-E.PopupDialogs.CONFIRM_LOSE_BINDING_CHANGES = {
-	text = CONFIRM_LOSE_BINDING_CHANGES,
-	button1 = OKAY,
-	button2 = CANCEL,
-	OnAccept = function()
-		AB:ChangeBindingProfile()
-		if AB then AB.bindingsChanged = nil end
-	end,
-	OnCancel = function()
-		local isChecked = ElvUIBindPopupWindowCheckButton:GetChecked()
-		ElvUIBindPopupWindowCheckButton:SetChecked(not isChecked)
-	end,
-	whileDead = 1,
-	showAlert = 1,
-}
 
 E.PopupDialogs.DISABLE_INCOMPATIBLE_ADDON = {
 	text = L["Do you swear not to post in technical support about something not working without first disabling the addon/module combination first?"],
@@ -194,111 +172,7 @@ E.PopupDialogs.PRIVATE_RL = {
 	hideOnEscape = false,
 }
 
-E.PopupDialogs.RESET_ALL_FILTERS = {
-	text = L["Accepting this will reset all filters to default. Are you sure?"],
-	button1 = ACCEPT,
-	button2 = CANCEL,
-	OnAccept = function()
-		UF:ResetFilters()
 
-		if E:Config_GetWindow() then
-			E:RefreshGUI()
-		end
-
-		UF:Update_AllFrames()
-		NP:ConfigureAll()
-	end,
-	whileDead = 1,
-	hideOnEscape = false,
-}
-
-E.PopupDialogs.RESET_UF_UNIT = {
-	text = L["Accepting this will reset the UnitFrame settings for %s. Are you sure?"],
-	button1 = ACCEPT,
-	button2 = CANCEL,
-	OnAccept = function(_, data)
-		if data and data.unit then
-			UF:ResetUnitSettings(data.unit)
-			if data.mover then
-				E:ResetMovers(data.mover)
-			end
-
-			if data.unit == 'raidpet' then
-				UF:CreateAndUpdateHeaderGroup(data.unit, nil, nil, true)
-			end
-
-			-- ElvUIChat: UnitFrames not present in this addon, nothing to navigate to
-		else
-			E:Print(L["Error resetting UnitFrame."])
-		end
-	end,
-	whileDead = 1,
-	hideOnEscape = false,
-}
-
-E.PopupDialogs.RESET_UF_AF = {
-	text = L["Accepting this will reset your Filter Priority lists for all auras on UnitFrames. Are you sure?"],
-	button1 = ACCEPT,
-	button2 = CANCEL,
-	OnAccept = function()
-		UF:ResetAuraPriority()
-	end,
-	whileDead = 1,
-	hideOnEscape = false,
-}
-
-E.PopupDialogs.RESET_NP_AF = {
-	text = L["Accepting this will reset your Filter Priority lists for all auras on NamePlates. Are you sure?"],
-	button1 = ACCEPT,
-	button2 = CANCEL,
-	OnAccept = function()
-		NP:ResetAuraPriority()
-	end,
-	whileDead = 1,
-	hideOnEscape = false,
-}
-
-E.PopupDialogs.BUY_BANK_SLOT = {
-	text = CONFIRM_BUY_BANK_SLOT,
-	button1 = YES,
-	button2 = NO,
-	OnAccept = PurchaseSlot,
-	OnShow = function(self)
-		MoneyFrame_Update(self.moneyFrame, GetBankSlotCost())
-	end,
-	hasMoneyFrame = 1,
-	hideOnEscape = 1,
-}
-
-E.PopupDialogs.CANNOT_BUY_BANK_SLOT = {
-	text = L["Can't buy anymore slots!"],
-	button1 = ACCEPT,
-	whileDead = 1,
-}
-
-E.PopupDialogs.NO_BANK_BAGS = {
-	text = L["You must purchase a bank slot first!"],
-	button1 = ACCEPT,
-	whileDead = 1,
-}
-
-E.PopupDialogs.RESETUI_CHECK = {
-	text = L["Are you sure you want to reset every mover back to it's default position?"],
-	button1 = ACCEPT,
-	button2 = CANCEL,
-	OnAccept = function()
-		E:ResetMovers()
-	end,
-	whileDead = 1,
-}
-
-E.PopupDialogs.DISBAND_RAID = {
-	text = L["Are you sure you want to disband the group?"],
-	button1 = ACCEPT,
-	button2 = CANCEL,
-	OnAccept = function() M:DisbandRaidGroup() end,
-	whileDead = 1,
-}
 
 E.PopupDialogs.CONFIRM_LOOT_DISTRIBUTION = {
 	text = CONFIRM_LOOT_DISTRIBUTION,

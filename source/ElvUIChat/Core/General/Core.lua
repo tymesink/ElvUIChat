@@ -1205,14 +1205,6 @@ do
 	end
 end
 
-function E:ResetUI(...)
-	if E:AlertCombat() then return end
-
-	if ... == '' or ... == ' ' or ... == nil then
-		E:StaticPopup_Show('RESETUI_CHECK')
-		return
-	end
-end
 
 do
 	local function Errorhandler(err)

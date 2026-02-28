@@ -5,7 +5,7 @@ local min = min
 local InCombatLockdown = InCombatLockdown
 local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
 
--- Simple combat guard used by E:ResetUI and ToggleOptions.
+-- Simple combat guard used by ToggleOptions.
 function E:AlertCombat()
 	if InCombatLockdown() then
 		E:Print(ERR_NOT_IN_COMBAT)
