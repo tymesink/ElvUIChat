@@ -109,16 +109,15 @@ end
 
 
 local function Size(frame, width, height, ...)
-	local w = E:Scale(width)
-	frame:SetSize(w, (height and E:Scale(height)) or w, ...)
+	frame:SetSize(width, height or width, ...)
 end
 
 local function Width(frame, width, ...)
-	frame:SetWidth(E:Scale(width), ...)
+	frame:SetWidth(width, ...)
 end
 
 local function Height(frame, height, ...)
-	frame:SetHeight(E:Scale(height), ...)
+	frame:SetHeight(height, ...)
 end
 
 local function OffsetFrameLevel(frame, offset, secondary)
@@ -130,12 +129,6 @@ end
 
 local function Point(obj, arg1, arg2, arg3, arg4, arg5, ...)
 	if not arg2 then arg2 = obj:GetParent() end
-
-	if type(arg2)=='number' then arg2 = E:Scale(arg2) end
-	if type(arg3)=='number' then arg3 = E:Scale(arg3) end
-	if type(arg4)=='number' then arg4 = E:Scale(arg4) end
-	if type(arg5)=='number' then arg5 = E:Scale(arg5) end
-
 	obj:SetPoint(arg1, arg2, arg3, arg4, arg5, ...)
 end
 
@@ -146,13 +139,13 @@ function E:SetPointsRestricted(frame)
 	end
 end
 
-local function SetOutside(obj, anchor, xOffset, yOffset, anchor2, noScale)
+local function SetOutside(obj, anchor, xOffset, yOffset, anchor2)
 	if not anchor then anchor = obj:GetParent() end
 
 	if not xOffset then xOffset = E.Border end
 	if not yOffset then yOffset = E.Border end
-	local x = (noScale and xOffset) or E:Scale(xOffset)
-	local y = (noScale and yOffset) or E:Scale(yOffset)
+	local x = xOffset
+	local y = yOffset
 
 	if E:SetPointsRestricted(obj) or obj:GetPoint() then
 		obj:ClearAllPoints()
@@ -163,13 +156,13 @@ local function SetOutside(obj, anchor, xOffset, yOffset, anchor2, noScale)
 	obj:SetPoint('BOTTOMRIGHT', anchor2 or anchor, 'BOTTOMRIGHT', x, -y)
 end
 
-local function SetInside(obj, anchor, xOffset, yOffset, anchor2, noScale)
+local function SetInside(obj, anchor, xOffset, yOffset, anchor2)
 	if not anchor then anchor = obj:GetParent() end
 
 	if not xOffset then xOffset = E.Border end
 	if not yOffset then yOffset = E.Border end
-	local x = (noScale and xOffset) or E:Scale(xOffset)
-	local y = (noScale and yOffset) or E:Scale(yOffset)
+	local x = xOffset
+	local y = yOffset
 
 	if E:SetPointsRestricted(obj) or obj:GetPoint() then
 		obj:ClearAllPoints()
@@ -180,7 +173,7 @@ local function SetInside(obj, anchor, xOffset, yOffset, anchor2, noScale)
 	obj:SetPoint('BOTTOMRIGHT', anchor2 or anchor, 'BOTTOMRIGHT', -x, y)
 end
 
-local function SetTemplate(frame, template, glossTex, ignoreUpdates, forcePixelMode, noScale)
+local function SetTemplate(frame, template, glossTex, ignoreUpdates, forcePixelMode)
 	GetTemplate(template)
 
 	frame.template = template or 'Default'
@@ -204,7 +197,7 @@ local function SetTemplate(frame, template, glossTex, ignoreUpdates, forcePixelM
 		frame:SetBackdrop({
 			edgeFile = E.media.blankTex,
 			bgFile = glossTex and (type(glossTex) == 'string' and glossTex or E.media.glossTex) or E.media.blankTex,
-			edgeSize = noScale and edgeSize or E:Scale(edgeSize)
+			edgeSize = edgeSize
 		})
 
 		if frame.callbackBackdropColor then
@@ -217,7 +210,7 @@ local function SetTemplate(frame, template, glossTex, ignoreUpdates, forcePixelM
 		if notPixelMode and not forcePixelMode then
 			local backdrop = {
 				edgeFile = E.media.blankTex,
-				edgeSize = noScale and 1 or E:Scale(1)
+				edgeSize = 1
 			}
 
 			local level = frame:GetFrameLevel()
@@ -226,7 +219,7 @@ local function SetTemplate(frame, template, glossTex, ignoreUpdates, forcePixelM
 				border:SetBackdrop(backdrop)
 				border:SetBackdropBorderColor(0, 0, 0, 1)
 				border:SetFrameLevel(level)
-				border:SetInside(frame, 1, 1, nil, noScale)
+				border:SetInside(frame, 1, 1)
 				frame.iborder = border
 			end
 
@@ -235,7 +228,7 @@ local function SetTemplate(frame, template, glossTex, ignoreUpdates, forcePixelM
 				border:SetBackdrop(backdrop)
 				border:SetBackdropBorderColor(0, 0, 0, 1)
 				border:SetFrameLevel(level)
-				border:SetOutside(frame, 1, 1, nil, noScale)
+				border:SetOutside(frame, 1, 1)
 				frame.oborder = border
 			end
 		end
@@ -252,12 +245,12 @@ local function SetTemplate(frame, template, glossTex, ignoreUpdates, forcePixelM
 	end
 end
 
-local function CreateBackdrop(frame, template, glossTex, ignoreUpdates, forcePixelMode, noScale, allPoints, frameLevel)
+local function CreateBackdrop(frame, template, glossTex, ignoreUpdates, forcePixelMode, allPoints, frameLevel)
 	local parent = (frame.IsObjectType and frame:IsObjectType('Texture') and frame:GetParent()) or frame
 	local backdrop = frame.backdrop or CreateFrame('Frame', nil, parent)
 	if not frame.backdrop then frame.backdrop = backdrop end
 
-	backdrop:SetTemplate(template, glossTex, ignoreUpdates, forcePixelMode, noScale)
+	backdrop:SetTemplate(template, glossTex, ignoreUpdates, forcePixelMode)
 
 	if allPoints then
 		if allPoints == true then
@@ -267,9 +260,9 @@ local function CreateBackdrop(frame, template, glossTex, ignoreUpdates, forcePix
 		end
 	else
 		if forcePixelMode then
-			backdrop:SetOutside(frame, E.twoPixelsPlease and 2 or 1, E.twoPixelsPlease and 2 or 1, nil, noScale)
+			backdrop:SetOutside(frame, E.twoPixelsPlease and 2 or 1, E.twoPixelsPlease and 2 or 1)
 		else
-			backdrop:SetOutside(frame, E.Border, E.Border, nil, noScale)
+			backdrop:SetOutside(frame, E.Border, E.Border)
 		end
 	end
 

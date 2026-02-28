@@ -76,12 +76,3 @@ function E:UIScale()
 	end
 end
 
-function E:Scale(x)
-	local m = E.mult
-	if not m or m == 1 or x == 0 then  -- ElvUIChat: Guard against nil mult
-		return x
-	else
-		local y = m > 1 and m or -m
-		return x - x % (x < 0 and y or -y)
-	end
-end

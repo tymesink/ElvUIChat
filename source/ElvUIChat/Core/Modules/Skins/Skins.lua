@@ -139,7 +139,7 @@ function S:HandleButton(button, strip, isDecline, noStyle, createBackdrop, templ
 
 	if not noStyle then
 		if createBackdrop then
-			button:CreateBackdrop(template, not noGlossTex, nil, nil, nil, true, frameLevel)
+			button:CreateBackdrop(template, not noGlossTex, nil, nil, true, frameLevel)
 		else
 			button:SetTemplate(template, not noGlossTex)
 		end
@@ -212,7 +212,7 @@ do
 		local thumb = GetButton(frame, thumbButtons) or (frame.GetThumbTexture and frame:GetThumbTexture())
 
 		frame:StripTextures()
-		frame:CreateBackdrop(template or 'Transparent', nil, nil, nil, nil, nil, true)
+		frame:CreateBackdrop(template or 'Transparent', nil, nil, nil, nil, true)
 		frame.backdrop:Point('TOPLEFT', upButton or frame, upButton and 'BOTTOMLEFT' or 'TOPLEFT', 0, 1)
 		frame.backdrop:Point('BOTTOMRIGHT', downButton or frame, upButton and 'TOPRIGHT' or 'BOTTOMRIGHT', 0, -1)
 
@@ -231,7 +231,7 @@ do
 		end
 		if thumb and not thumb.backdrop then
 			thumb:SetTexture()
-			thumb:CreateBackdrop(nil, true, true, nil, nil, nil, frameLevel + 1)
+			thumb:CreateBackdrop(nil, true, true, nil, nil, frameLevel + 1)
 
 			if not frame.Thumb then
 				frame.Thumb = thumb
@@ -365,7 +365,7 @@ function S:HandleEditBox(frame, template)
 
 	if frame.backdrop then return end
 
-	frame:CreateBackdrop(template, nil, nil, nil, nil, nil, true)
+	frame:CreateBackdrop(template, nil, nil, nil, nil, true)
 	frame.backdrop:SetPoint('TOPLEFT', -2, 0)
 	frame.backdrop:SetPoint('BOTTOMRIGHT')
 	S:HandleBlizzardRegions(frame)
@@ -447,7 +447,7 @@ do
 		if noBackdrop then
 			frame:Size(16)
 		else
-			frame:CreateBackdrop(template, nil, nil, nil, nil, nil, frameLevel)
+			frame:CreateBackdrop(template, nil, nil, nil, nil, frameLevel)
 			frame.backdrop:SetInside(nil, 4, 4)
 		end
 
@@ -670,7 +670,7 @@ function S:HandleSliderFrame(frame, template, frameLevel)
 	frame:SetThumbTexture(E.Media.Textures.Melli)
 
 	if not frame.backdrop then
-		frame:CreateBackdrop(template, nil, nil, nil, nil, true, frameLevel)
+		frame:CreateBackdrop(template, nil, nil, nil, true, frameLevel)
 	end
 
 	local thumb = frame:GetThumbTexture()
