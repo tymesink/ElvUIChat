@@ -95,7 +95,6 @@ end
 function E:PixelScaleChanged(event)
 	if event == 'UI_SCALE_CHANGED' then
 		E.physicalWidth, E.physicalHeight = GetPhysicalScreenSize()
-		E.resolution = format('%dx%d', E.physicalWidth, E.physicalHeight)
 		E.perfect = 768 / E.physicalHeight
 	end
 

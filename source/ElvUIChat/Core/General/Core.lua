@@ -15,8 +15,6 @@ local CreateFrame = CreateFrame
 local ReloadUI = ReloadUI
 local UIParent = UIParent
 local GetSpecialization = C_SpecializationInfo.GetSpecialization or GetSpecialization
-local PlayerGetTimerunningSeasonID = PlayerGetTimerunningSeasonID
-
 local DisableAddOn = C_AddOns.DisableAddOn
 local GetCVarBool = C_CVar.GetCVarBool
 
@@ -32,16 +30,13 @@ local LSM = E.Libs.LSM
 E.noop = function() end
 E.title = format('%s%s|r', E.InfoColor, 'ElvUIChat')
 E.version, E.versionString, E.versionDev, E.versionGit = E:ParseVersionString('ElvUIChat')
-E.myLocalizedClass, E.myclass, E.myClassID = UnitClass('player')
-E.myLocalizedRace, E.myrace, E.myRaceID = UnitRace('player')
-E.mygender = UnitSex('player')
+E.myclass = select(2, UnitClass('player'))
 E.myname = UnitName('player')
 E.myrealm = GetRealmName()
 E.mynameRealm = format('%s - %s', E.myname, E.myrealm) -- contains spaces/dashes in realm (for profile keys)
 E.wowbuild = tonumber(E.wowbuild)
 E.physicalWidth, E.physicalHeight = GetPhysicalScreenSize()
 E.screenWidth, E.screenHeight = GetScreenWidth(), GetScreenHeight()
-E.resolution = format('%dx%d', E.physicalWidth, E.physicalHeight)
 E.perfect = 768 / E.physicalHeight
 E.allowRoles = true -- Retail-only
 E.ClearTexture = 0 -- used to clear: Set (Normal, Disabled, Checked, Pushed, Highlight) Texture
@@ -187,7 +182,6 @@ function E:UpdateMedia(mediaType)
 	if not E.db.general or not E.private.general then return end
 
 	E.media.normFont = LSM:Fetch('font', E.db.general.font)
-	E.media.combatFont = LSM:Fetch('font', E.private.general.dmgfont)
 	E.media.blankTex = LSM:Fetch('background', 'ElvUIChat Blank')
 	E.media.normTex = LSM:Fetch('statusbar', E.private.general.normTex)
 	E.media.glossTex = LSM:Fetch('statusbar', E.private.general.glossTex)
@@ -210,27 +204,9 @@ function E:UpdateMedia(mediaType)
 	E.media.backdropcolor = E:SetColorTable(E.media.backdropcolor, E:UpdateClassColor(E.db.general.backdropcolor))
 	E.media.backdropfadecolor = E:SetColorTable(E.media.backdropfadecolor, E:UpdateClassColor(E.db.general.backdropfadecolor))
 
-	-- Custom Glow Color
-	E.media.customGlowColor = E:SetColorTable(E.media.customGlowColor, E:UpdateClassColor(E.db.general.customGlow.color))
-
 	local value = E:UpdateClassColor(E.db.general.valuecolor)
 	E.media.rgbvaluecolor = E:SetColorTable(E.media.rgbvaluecolor, value)
 	E.media.hexvaluecolor = E:RGBToHex(value.r, value.g, value.b)
-
-	-- TODO: cooldown settings can be nil in slimmed chat builds; decide if we should enforce presence
-	if E.db.cooldown and E.db.cooldown.enable then
-		for key in next, P.cooldown do
-			local db = type(key) == 'table' and E.db.cooldown[key]
-			if db then
-				E:UpdateClassColor(db.colors.text)
-				E:UpdateClassColor(db.colors.edge)
-				E:UpdateClassColor(db.colors.edgeCharge)
-				E:UpdateClassColor(db.colors.swipe)
-				E:UpdateClassColor(db.colors.swipeCharge)
-				E:UpdateClassColor(db.colors.swipeLOC)
-			end
-		end
-	end
 
 	if E.private.chat.enable then
 		-- Chat Tab Selector Color
@@ -642,7 +618,6 @@ function E:Initialize()
 	wipe(E.private)
 
 	E.myspec = GetSpecialization()
-	E.TimerunningID = PlayerGetTimerunningSeasonID and PlayerGetTimerunningSeasonID()
 
 	-- ElvUIChat: Use our namespaced database names
 	E.data = E.Libs.AceDB:New('ElvUIChatDB', E.DF, true)
