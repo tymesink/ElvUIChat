@@ -11,7 +11,6 @@ local hooksecurefunc = hooksecurefunc
 local CreateFrame = CreateFrame
 local HideUIPanel = HideUIPanel
 local InCombatLockdown = InCombatLockdown
-local UnitFactionGroup = UnitFactionGroup
 local UnitGroupRolesAssigned = UnitGroupRolesAssigned
 local GetSpecialization = GetSpecialization
 local GetSpecializationRole = GetSpecializationRole
@@ -99,14 +98,6 @@ function E:PLAYER_REGEN_DISABLED()
 	end
 end
 
-function E:NEUTRAL_FACTION_SELECT_RESULT()
-	E.myfaction, E.myLocalizedFaction = UnitFactionGroup('player')
-end
-
-function E:PLAYER_LEVEL_UP(_, level)
-	E.mylevel = level
-end
-
 function E:PositionGameMenuButton()
 	local logout = _G.GameMenuButtonLogout
 	if not (logout and GameMenuFrame and GameMenuFrame.Header and GameMenuFrame.Header.Text) then return end
@@ -151,11 +142,9 @@ function E:SetupGameMenu()
 end
 
 function E:LoadAPI()
-	E:RegisterEvent('PLAYER_LEVEL_UP')
 	E:RegisterEvent('PLAYER_ENTERING_WORLD')
 	E:RegisterEvent('PLAYER_REGEN_ENABLED')
 	E:RegisterEvent('PLAYER_REGEN_DISABLED')
-	E:RegisterEvent('NEUTRAL_FACTION_SELECT_RESULT')
 	E:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED', 'CheckRole')
 	E:SetupGameMenu()
 

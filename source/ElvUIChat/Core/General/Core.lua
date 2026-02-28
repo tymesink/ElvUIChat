@@ -14,8 +14,6 @@ local ColorMixin = ColorMixin
 local CreateFrame = CreateFrame
 local ReloadUI = ReloadUI
 local UIParent = UIParent
-local UnitFactionGroup = UnitFactionGroup
-
 local GetSpecialization = C_SpecializationInfo.GetSpecialization or GetSpecialization
 local PlayerGetTimerunningSeasonID = PlayerGetTimerunningSeasonID
 
@@ -34,11 +32,9 @@ local LSM = E.Libs.LSM
 E.noop = function() end
 E.title = format('%s%s|r', E.InfoColor, 'ElvUIChat')
 E.version, E.versionString, E.versionDev, E.versionGit = E:ParseVersionString('ElvUIChat')
-E.myfaction, E.myLocalizedFaction = UnitFactionGroup('player')
 E.myLocalizedClass, E.myclass, E.myClassID = UnitClass('player')
 E.myLocalizedRace, E.myrace, E.myRaceID = UnitRace('player')
 E.mygender = UnitSex('player')
-E.mylevel = UnitLevel('player')
 E.myname = UnitName('player')
 E.myrealm = GetRealmName()
 E.mynameRealm = format('%s - %s', E.myname, E.myrealm) -- contains spaces/dashes in realm (for profile keys)
