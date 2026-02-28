@@ -6,7 +6,6 @@ local gsub = gsub
 local ipairs = ipairs
 local unpack = unpack
 local tinsert = tinsert
-local strmatch = strmatch
 
 local RaiseFrameLevel = RaiseFrameLevel
 local LowerFrameLevel = LowerFrameLevel
@@ -45,30 +44,11 @@ function S:Ace3_SkinDropdown()
 	end
 end
 
-function S:Ace3_CheckBoxIsEnable(widget)
-	local text = widget and widget.text and widget.text:GetText()
-	if text and S.Ace3_EnableMatch then return strmatch(text, S.Ace3_EnableMatch) end
-end
-
 function S:Ace3_CheckBoxSetDesaturated(value)
-	local widget = self:GetParent().obj
 	if value == true then
 		self:SetVertexColor(.6, .6, .6, .8)
-	elseif S:Ace3_CheckBoxIsEnable(widget) then
-		if widget.checked then
-			self:SetVertexColor(0.2, 1.0, 0.2, 1.0)
-		else
-			self:SetVertexColor(1.0, 0.2, 0.2, 1.0)
-		end
 	else
 		self:SetVertexColor(1, .82, 0, 0.8)
-	end
-end
-
-function S:Ace3_CheckBoxSetDisabled(disabled)
-	if S:Ace3_CheckBoxIsEnable(self) then
-		local tristateOrDisabled = disabled or (self.tristate and self.checked == nil)
-		self:SetLabel((tristateOrDisabled and S.Ace3_L.Enable) or (self.checked and S.Ace3_EnableOn) or S.Ace3_EnableOff)
 	end
 end
 
@@ -149,7 +129,6 @@ function S:Ace3_RegisterAsWidget(widget)
 		checkbg:SetTexture()
 		highlight:SetTexture()
 
-		hooksecurefunc(widget, 'SetDisabled', S.Ace3_CheckBoxSetDisabled)
 		hooksecurefunc(widget, 'SetType', S.Ace3_CheckBoxSetType)
 
 		if E.private.skins.checkBoxSkin then
