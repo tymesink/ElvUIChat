@@ -4,13 +4,18 @@
 local E, L, V, P, G = unpack(ElvUIChat)
 
 local _G = _G
-local type, ipairs, unpack = type, ipairs, unpack
+local type, ipairs, pairs, unpack = type, ipairs, pairs, unpack
 local strlen, tonumber = strlen, tonumber
+local wipe = wipe
 local hooksecurefunc = hooksecurefunc
 
 local CreateFrame = CreateFrame
 local HideUIPanel = HideUIPanel
 local InCombatLockdown = InCombatLockdown
+local IsInGroup = IsInGroup
+local IsInRaid = IsInRaid
+local UnitExists = UnitExists
+local UnitGUID = UnitGUID
 local UnitGroupRolesAssigned = UnitGroupRolesAssigned
 local GetSpecialization = GetSpecialization
 local GetSpecializationRole = GetSpecializationRole
@@ -60,8 +65,41 @@ function E:CheckRole()
 	E.myrole = E:GetPlayerRole()
 end
 
+E.GroupRoles = {}
+E.GroupUnitsByRole = {}
+
+function E:UpdateGroupRoles()
+	wipe(E.GroupRoles)
+	for k in pairs(E.GroupUnitsByRole) do
+		wipe(E.GroupUnitsByRole[k])
+	end
+
+	E.IsInGroup = IsInGroup()
+	if not E.IsInGroup then return end
+
+	local inRaid = IsInRaid()
+	local prefix = inRaid and 'raid' or 'party'
+	local maxNum = inRaid and 40 or 4
+
+	for i = 1, maxNum do
+		local unit = prefix..i
+		if UnitExists(unit) then
+			local guid = UnitGUID(unit)
+			local role = UnitGroupRolesAssigned(unit)
+			if guid and role and role ~= 'NONE' then
+				E.GroupRoles[guid] = role
+				if not E.GroupUnitsByRole[role] then
+					E.GroupUnitsByRole[role] = {}
+				end
+				E.GroupUnitsByRole[role][guid] = unit
+			end
+		end
+	end
+end
+
 function E:PLAYER_ENTERING_WORLD(_, initLogin, isReload)
 	E:CheckRole()
+	E:UpdateGroupRoles()
 
 	if initLogin or not ElvUIChatDB.DisabledAddOns then
 		ElvUIChatDB.DisabledAddOns = {}
@@ -145,6 +183,7 @@ function E:LoadAPI()
 	E:RegisterEvent('PLAYER_ENTERING_WORLD')
 	E:RegisterEvent('PLAYER_REGEN_ENABLED')
 	E:RegisterEvent('PLAYER_REGEN_DISABLED')
+	E:RegisterEvent('GROUP_ROSTER_UPDATE', 'UpdateGroupRoles')
 	E:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED', 'CheckRole')
 	E:SetupGameMenu()
 

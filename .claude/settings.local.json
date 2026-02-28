@@ -21,7 +21,12 @@
       "WebFetch(domain:github.com)",
       "Bash(luac:*)",
       "Bash(python3:*)",
-      "Bash(get_errors:*)"
+      "Bash(get_errors:*)",
+      "Bash(where:*)",
+      "Bash(cmd:*)",
+      "Bash(node:*)",
+      "Bash(do:*)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }
