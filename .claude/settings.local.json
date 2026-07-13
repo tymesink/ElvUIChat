@@ -26,7 +26,10 @@
       "Bash(cmd:*)",
       "Bash(node:*)",
       "Bash(do:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(luacheck source/ElvUIChat/Core/Modules/Chat/Chat.lua source/ElvUIChat/Core/General/Options.lua source/ElvUIChat/Core/Defaults/Profile.lua --no-max-line-length)",
+      "Bash(mech call *)",
+      "Read(//d//**)"
     ]
   }
 }

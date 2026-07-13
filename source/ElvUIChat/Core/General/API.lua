@@ -4,14 +4,10 @@
 local E, L, V, P, G = unpack(ElvUIChat)
 
 local _G = _G
-local type, ipairs, pairs, unpack = type, ipairs, pairs, unpack
+local type, ipairs, pairs = type, ipairs, pairs
 local strlen, tonumber = strlen, tonumber
 local wipe = wipe
-local hooksecurefunc = hooksecurefunc
 
-local CreateFrame = CreateFrame
-local HideUIPanel = HideUIPanel
-local InCombatLockdown = InCombatLockdown
 local IsInGroup = IsInGroup
 local IsInRaid = IsInRaid
 local UnitExists = UnitExists
@@ -21,9 +17,6 @@ local GetSpecialization = GetSpecialization
 local GetSpecializationRole = GetSpecializationRole
 
 local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
-
-local GameMenuButtonAddons = GameMenuButtonAddons
-local GameMenuFrame = GameMenuFrame
 -- GLOBALS: ElvUIChatDB
 
 function E:ClassColor(class, usePriestColor)
@@ -136,56 +129,12 @@ function E:PLAYER_REGEN_DISABLED()
 	end
 end
 
-function E:PositionGameMenuButton()
-	local logout = _G.GameMenuButtonLogout
-	if not (logout and GameMenuFrame and GameMenuFrame.Header and GameMenuFrame.Header.Text) then return end
-
-	GameMenuFrame.Header.Text:SetTextColor(unpack(E.media.rgbvaluecolor))
-	GameMenuFrame:Height(GameMenuFrame:GetHeight() + logout:GetHeight() - 4)
-
-	local button = GameMenuFrame[E.name]
-	button:SetFormattedText('%s%s|r', E.media.hexvaluecolor, E.name)
-
-	local _, relTo, _, _, offY = logout:GetPoint()
-	if relTo ~= button then
-		button:ClearAllPoints()
-		button:Point('TOPLEFT', relTo, 'BOTTOMLEFT', 0, -1)
-		logout:ClearAllPoints()
-		logout:Point('TOPLEFT', button, 'BOTTOMLEFT', 0, offY)
-	end
-end
-
-function E:ClickGameMenu()
-	E:ToggleOptions()
-
-	if not InCombatLockdown() then
-		HideUIPanel(GameMenuFrame)
-	end
-end
-
-function E:SetupGameMenu()
-	local button = CreateFrame('Button', nil, GameMenuFrame, 'GameMenuButtonTemplate')
-	button:SetScript('OnClick', E.ClickGameMenu)
-	GameMenuFrame[E.name] = button
-
-	local logout = _G.GameMenuButtonLogout
-	if logout and not E:IsAddOnEnabled('ConsolePortUI_Menu') then
-		button:Size(logout:GetWidth(), logout:GetHeight())
-		button:Point('TOPLEFT', GameMenuButtonAddons, 'BOTTOMLEFT', 0, -1)
-		hooksecurefunc('GameMenuFrame_UpdateVisibleButtons', E.PositionGameMenuButton)
-	else
-		button:Size(152, 22)
-		button:Point('TOPLEFT', GameMenuButtonAddons or GameMenuFrame.Header, 'BOTTOMLEFT', 0, -1)
-	end
-end
-
 function E:LoadAPI()
 	E:RegisterEvent('PLAYER_ENTERING_WORLD')
 	E:RegisterEvent('PLAYER_REGEN_ENABLED')
 	E:RegisterEvent('PLAYER_REGEN_DISABLED')
 	E:RegisterEvent('GROUP_ROSTER_UPDATE', 'UpdateGroupRoles')
 	E:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED', 'CheckRole')
-	E:SetupGameMenu()
 
 	do -- setup cropIcon texCoords
 		local opt = E.db.general.cropIcon

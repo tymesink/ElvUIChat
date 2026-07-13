@@ -3330,11 +3330,52 @@ function CH:RepositionOverflowButton()
 		end
 	end
 
+	CH:UpdateChatAlertAnchor()
+end
+
+local function GetChatAlertAnchor()
+	local anchorName = CH.db.chatAlertAnchorFrame
+	local anchorFrame = (anchorName == 'LeftChatPanel' and _G.LeftChatPanel) or (anchorName == 'UIParent' and UIParent) or _G.GeneralDockManager
+	local point = CH.db.chatAlertAnchorPoint or 'TOPRIGHT'
+
+	return anchorFrame, point, CH.db.chatAlertOffsetX or 3, CH.db.chatAlertOffsetY or 3
+end
+
+function CH:UpdateChatAlertAnchor()
 	local ChatAlertFrame = _G.ChatAlertFrame
 	if ChatAlertFrame then
+		local anchorFrame, point, offsetX, offsetY = GetChatAlertAnchor()
 		ChatAlertFrame:ClearAllPoints()
-		ChatAlertFrame:Point('BOTTOMRIGHT', _G.GeneralDockManager, 'TOPRIGHT', 3, 3)
+		ChatAlertFrame:Point(point, anchorFrame, point, offsetX, offsetY)
 	end
+
+	if CH.ChatAlertTestFrame and CH.ChatAlertTestFrame:IsShown() then
+		local anchorFrame, point, offsetX, offsetY = GetChatAlertAnchor()
+		CH.ChatAlertTestFrame:ClearAllPoints()
+		CH.ChatAlertTestFrame:Point(point, anchorFrame, point, offsetX, offsetY)
+	end
+end
+
+function CH:ToggleChatAlertTestFrame(show)
+	if show and not CH.ChatAlertTestFrame then
+		local Test = CreateFrame('Frame', 'ElvUIChatAlertTestFrame', E.UIParent)
+		Test:Size(300, 52)
+		Test:SetTemplate('Default')
+		Test:SetFrameStrata('TOOLTIP')
+
+		local text = Test:CreateFontString(nil, 'OVERLAY')
+		text:Point('CENTER')
+		text:FontTemplate(nil, 14, 'OUTLINE')
+		text:SetText('Battle.net Alert Test')
+		Test.text = text
+
+		CH.ChatAlertTestFrame = Test
+	end
+
+	if not CH.ChatAlertTestFrame then return end
+
+	CH.ChatAlertTestFrame:SetShown(show)
+	if show then CH:UpdateChatAlertAnchor() end
 end
 
 function CH:UpdateVoiceChatIcons()

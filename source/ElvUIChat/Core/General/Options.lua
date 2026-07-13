@@ -122,6 +122,14 @@ function E:LoadConfigOptions_Chat()
     General.args.alerts.args.channelAlerts.args.RAID = ACH:SharedMediaSound('Raid', nil, nil, 'double')
     General.args.alerts.args.channelAlerts.args.WHISPER = ACH:SharedMediaSound('Whisper', nil, nil, 'double')
 
+    General.args.alerts.args.chatAlertAnchor = ACH:Group('Battle.net Alert Position', nil, 15, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:UpdateChatAlertAnchor() end)
+    General.args.alerts.args.chatAlertAnchor.inline = true
+    General.args.alerts.args.chatAlertAnchor.args.chatAlertAnchorFrame = ACH:Select('Attach To', 'Frame the Battle.net alert popup (friend requests, broadcasts, etc.) is anchored to.', 1, { GeneralDockManager = 'Chat Tabs', LeftChatPanel = 'Chat Panel', UIParent = 'Screen' })
+    General.args.alerts.args.chatAlertAnchor.args.chatAlertAnchorPoint = ACH:Select('Anchor Point', nil, 2, { TOPLEFT = 'Top Left', TOP = 'Top', TOPRIGHT = 'Top Right', LEFT = 'Left', CENTER = 'Center', RIGHT = 'Right', BOTTOMLEFT = 'Bottom Left', BOTTOM = 'Bottom', BOTTOMRIGHT = 'Bottom Right' })
+    General.args.alerts.args.chatAlertAnchor.args.chatAlertOffsetX = ACH:Range('X Offset', nil, 3, { min = -500, max = 500, step = 1 })
+    General.args.alerts.args.chatAlertAnchor.args.chatAlertOffsetY = ACH:Range('Y Offset', nil, 4, { min = -500, max = 500, step = 1 })
+    General.args.alerts.args.chatAlertAnchor.args.chatAlertTest = ACH:Toggle('Test Position', 'Shows a placeholder frame at the configured position so you can preview it without waiting for a real Battle.net alert.', 5, nil, nil, nil, function() return CH.ChatAlertTestFrame and CH.ChatAlertTestFrame:IsShown() end, function(_, value) CH:ToggleChatAlertTestFrame(value) end)
+
     General.args.voicechatGroup = ACH:Group('Voice Chat', nil, 90)
     General.args.voicechatGroup.args.hideVoiceButtons = ACH:Toggle('Hide Voice Buttons', 'Completely hide the voice buttons.', 1, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value E.ShowPopup = true end)
     General.args.voicechatGroup.args.pinVoiceButtons = ACH:Toggle('Pin Voice Buttons', 'This will pin the voice buttons to the chat\'s tab panel. Unchecking it will create a voice button panel with a mover.', 2, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value E.ShowPopup = true end, function() return E.db.chat.hideVoiceButtons end)
